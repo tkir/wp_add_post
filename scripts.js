@@ -25,6 +25,14 @@ function mediumEditorInit() {
     });
 }
 
+function tagHandlerInit() {
+    $("#array_tag_handler").tagHandler({
+        assignedTags: [ 'C', 'Perl', 'PHP' ],
+        availableTags: [ 'C', 'C++', 'C#', 'Java', 'Perl', 'PHP', 'Python' ],
+        autocomplete: true
+    });
+}
+
 function textProcessing() {
     let el = document.createElement("DIV");
     el.innerHTML = editor.getContent();

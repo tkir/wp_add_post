@@ -15,12 +15,14 @@ if (
 
 	$post_title   = $_POST['post-title'];
 	$post_content = $_POST['post-data'];
+	$post_category = $_POST['post-category'];
 
 	$new_post = array(
 		'ID'           => '',
 		'post_author'  => $user->ID,
 		'post_content' => $post_content,
 		'post_title'   => $post_title,
+		'post_category' => array($post_category),
 		'post_status'  => 'publish'
 	);
 

@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: Add Post
-Plugin URI: http://tkir.github.io/BusinessCardEditor
+Plugin URI: http://tkir.github.io/wp_add_post
 Description: Wordpress plugin for adding post without admin
 Version: 1.0
 Author: Kirill Titenko
 Author URI: http://github.com/tkir/
 */
 
-/*  Copyright 2017  Kirill Titenko  (email: kirill.titenko@gmail.com)
+/*  Copyright 2018  Kirill Titenko  (email: kirill.titenko@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,10 +57,7 @@ function true_include_script() {
 	wp_enqueue_script('medium-editor-insert-plugin-js','https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/js/medium-editor-insert-plugin.min.js',false,false,true);
 
 	wp_enqueue_script('Multiplaceholders', plugin_dir_url( __FILE__ ).'medium_editor/Multiplaceholders/medium-editor-multi-placeholders-plugin.min.js', false,false,true);
-
 	wp_add_inline_script('Multiplaceholders', "mediumEditorInit();");
-
-
 }
 
 
