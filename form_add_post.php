@@ -1,4 +1,5 @@
-<form method="post"
+<form id="wp_add_post"
+      method="post"
       name="add-post"
       enctype="multipart/form-data"
       onsubmit="textProcessing();"
@@ -7,6 +8,7 @@
 
     <input type="hidden" name="post-title">
     <input type="hidden" name="post-data">
+    <input type="hidden" name="post-tags">
 
     <label class="" for="post-category">Категория</label>
 	<?php wp_dropdown_categories(
@@ -21,6 +23,25 @@
 	); ?>
 
     <div class="editable"></div>
-    <input type="button" value="Publish" onclick="textProcessing();">
+
+    <div data-tags>
+        <ul>
+            <template data-template="liTag">
+                <li class="tag"><span></span></li>
+            </template>
+        </ul>
+        <input type="text" placeholder="enter tag">
+        <input type="button" value="+">
+
+<!--        кнопки с автодобавлением тегов-->
+        <div data-autocomplete class="">
+            <template data-template="btnAutocomplete">
+                <button><span></span></button>
+            </template>
+        </div>
+    </div>
+
+    <input type="submit" value="Publish" onsubmit="submitClick();">
 
 </form>
+

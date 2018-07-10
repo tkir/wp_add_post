@@ -1,0 +1,12 @@
+#wp_add_post div[data-tags] input{
+    display: inline-block;
+    max-width: 80%;
+}
+
+#wp_add_post div[data-autocomplete]{
+    display: none;
+}
+#wp_add_post div[data-autocomplete].active{
+    display: block;
+    /*position: absolute;*/
+}

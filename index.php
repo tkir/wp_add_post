@@ -29,35 +29,64 @@ Author URI: http://github.com/tkir/
  * Plugin initialization
  */
 
-add_shortcode('add_post_tkir', 'add_short');
-function add_short(){
+add_shortcode( 'wp_add_post', 'add_short' );
+function add_short() {
 	ob_start();
-	include_once('form_add_post.php');
+	include_once( 'form_add_post.php' );
+
 	return ob_get_clean();
 }
 
 add_action( 'wp_enqueue_scripts', 'true_include_script' );
 function true_include_script() {
-	wp_enqueue_script('scripts', plugin_dir_url( __FILE__ ).'scripts.js', false,false,true);
+	wp_enqueue_style( 'style', plugin_dir_url( __FILE__ ) . 'css/style.css' );
+	wp_enqueue_script( 'scripts', plugin_dir_url( __FILE__ ) . 'js/scripts.js', false, false, true );
 	wp_deregister_script( 'jquery' );
 	wp_register_script( 'jquery', ( 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js' ), false, null, false );
 	wp_enqueue_script( 'jquery' );
 
-	wp_enqueue_style('fontAwesome', 'http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css');
+	wp_enqueue_style( 'fontAwesome', 'http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css' );
 	wp_enqueue_style( 'medium_editor_css', 'https://cdn.jsdelivr.net/npm/medium-editor@5.23.2/dist/css/medium-editor.min.css' );
 	wp_enqueue_script( 'medium_editor_js', 'https://cdn.jsdelivr.net/npm/medium-editor@5.23.2/dist/js/medium-editor.min.js', array(), null, true );
 
-	wp_enqueue_script('handlebars', 'https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.runtime.min.js', false, false, true);
-	wp_enqueue_script('jQuery-sortable', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-sortable/0.9.13/jquery-sortable-min.js', false, false, true);
-	wp_enqueue_script('jquery-ui-widget', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/jquery.ui.widget.min.js', false,false,true);
-	wp_enqueue_script('jquery-iframe-transport','https://cdnjs.cloudflare.com/ajax/libs/jquery.iframe-transport/1.0.1/jquery.iframe-transport.min.js',false,false,true);
-	wp_enqueue_script('jquery-fileupload','https://cdnjs.cloudflare.com/ajax/libs/blueimp-file-upload/9.22.0/js/jquery.fileupload.min.js',false,false,true);
+	wp_enqueue_script( 'handlebars', 'https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.runtime.min.js', false, false, true );
+	wp_enqueue_script( 'jQuery-sortable', 'https://cdnjs.cloudflare.com/ajax/libs/jquery-sortable/0.9.13/jquery-sortable-min.js', false, false, true );
+	wp_enqueue_script( 'jquery-ui-widget', 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/jquery.ui.widget.min.js', false, false, true );
+	wp_enqueue_script( 'jquery-iframe-transport', 'https://cdnjs.cloudflare.com/ajax/libs/jquery.iframe-transport/1.0.1/jquery.iframe-transport.min.js', false, false, true );
+	wp_enqueue_script( 'jquery-fileupload', 'https://cdnjs.cloudflare.com/ajax/libs/blueimp-file-upload/9.22.0/js/jquery.fileupload.min.js', false, false, true );
 
-	wp_enqueue_style('medium-editor-insert-plugin-css', 'https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/css/medium-editor-insert-plugin.min.css');
-	wp_enqueue_script('medium-editor-insert-plugin-js','https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/js/medium-editor-insert-plugin.min.js',false,false,true);
+	wp_enqueue_style( 'medium-editor-insert-plugin-css', 'https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/css/medium-editor-insert-plugin.min.css' );
+	wp_enqueue_script( 'medium-editor-insert-plugin-js', 'https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/js/medium-editor-insert-plugin.min.js', false, false, true );
 
-	wp_enqueue_script('Multiplaceholders', plugin_dir_url( __FILE__ ).'medium_editor/Multiplaceholders/medium-editor-multi-placeholders-plugin.min.js', false,false,true);
-	wp_add_inline_script('Multiplaceholders', "mediumEditorInit();");
+	wp_enqueue_script( 'Multiplaceholders', plugin_dir_url( __FILE__ ) . 'medium_editor/Multiplaceholders/medium-editor-multi-placeholders-plugin.min.js', false, false, true );
+	wp_add_inline_script( 'Multiplaceholders', "mediumEditorInit();" );
+
+	wp_localize_script( 'scripts', 'ajax_config', array(
+		'path'  => admin_url( 'admin-ajax.php' ),
+		'nonce' => wp_create_nonce( 'wp_ajax' )
+	) );
+}
+
+add_action( 'wp_ajax_tag_autocomplete', 'tag_autocomplete' );
+function tag_autocomplete() {
+	$nonce = $_POST['nonce'];
+	if ( ! wp_verify_nonce( $nonce, 'wp_ajax' ) ) {
+		die ( 'Busted!' );
+	}
+
+	global $wpdb;
+	$tag = esc_sql( $_POST['tag'] );
+
+	$tags = $wpdb->get_results( "
+SELECT name FROM `wp_terms`
+	WHERE term_id IN ( SELECT term_id FROM wp_term_taxonomy WHERE taxonomy='post_tag' )
+	AND name LIKE '%$tag%'
+	" );
+
+	header( "Content-Type: application/json" );
+	echo json_encode( $tags );
+
+	wp_die();
 }
 
 
