@@ -18,16 +18,19 @@ var TagField = (function () {
         return this.tags;
     };
     TagField.prototype.addTagClick = function () {
-        var _this = this;
         this.input.value = this.input.value.trim();
-        if (this.input.value.length > 2 &&
-            !this.tags.some(function (tag) { return tag == _this.input.value; })) {
+        if (this.input.value.length > 2) {
+            this.addTag(this.input.value);
+            this.input.value = '';
+        }
+    };
+    TagField.prototype.addTag = function (tag) {
+        if (!this.tags.some(function (t) { return t == tag; })) {
             this.liTpl = this.div.querySelector('template[data-template=liTag]')
                 .content.cloneNode(true);
-            this.liTpl.querySelector('span').innerText = this.input.value;
+            this.liTpl.querySelector('span').innerText = tag;
             this.ul.appendChild(this.liTpl);
-            this.tags.push(this.input.value);
-            this.input.value = '';
+            this.tags.push(tag);
         }
     };
     TagField.prototype.inputInput = function () {
@@ -86,7 +89,7 @@ var TagField = (function () {
         this.divAutocomplete.classList.add('active');
     };
     TagField.prototype.btnAutoClick = function (e) {
-        console.log(e.innerText);
+        this.addTag(e.target.innerText);
     };
     return TagField;
 }());

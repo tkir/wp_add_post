@@ -34,14 +34,19 @@ class TagField {
     addTagClick() {
         this.input.value = this.input.value.trim();
 
-        if (this.input.value.length > 2 &&
-            !this.tags.some(tag => tag == this.input.value)) {
+        if (this.input.value.length > 2){
+            this.addTag(this.input.value);
+            this.input.value = '';
+        }
+    }
+
+    private addTag(tag){
+        if (!this.tags.some(t => t == tag)) {
             this.liTpl = <HTMLElement>(<HTMLTemplateElement>this.div.querySelector('template[data-template=liTag]'))
                 .content.cloneNode(true);
-            this.liTpl.querySelector('span').innerText = this.input.value;
+            this.liTpl.querySelector('span').innerText = tag;
             this.ul.appendChild(this.liTpl);
-            this.tags.push(this.input.value);
-            this.input.value = '';
+            this.tags.push(tag);
         }
     }
 
@@ -108,6 +113,6 @@ class TagField {
     }
 
     btnAutoClick(e) {
-        console.log(e.innerText);
+        this.addTag(e.target.innerText);
     }
 }
