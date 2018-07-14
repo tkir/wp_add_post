@@ -15,6 +15,7 @@ var AddPostForm = /** @class */ (function () {
         this.ul.addEventListener('click', function (e) { return _this.removeTag(e); });
         this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', function () { return _this.submitClick(); });
         this.form.querySelector('[data-btn=btnCancel]').addEventListener('click', function () { return _this.cancelClick(); });
+        this.form.querySelector('[data-btn=btnDraft]').addEventListener('click', function () { return _this.draftClick(); });
         if (wp_post)
             setTimeout(function () { return _this.setPost(); }, 1000);
     }
@@ -113,11 +114,28 @@ var AddPostForm = /** @class */ (function () {
     };
     //form submit
     AddPostForm.prototype.submitClick = function () {
+        this.form.querySelector('input[name=post-status]').setAttribute('value', 'publish');
+        this.formSubmit();
+    };
+    AddPostForm.prototype.cancelClick = function () {
+        window.history.back();
+    };
+    AddPostForm.prototype.draftClick = function () {
+        this.form.querySelector('input[name=post-status]').setAttribute('value', 'draft');
+        this.formSubmit();
+    };
+    AddPostForm.prototype.setPost = function () {
+        editor.setContent("\n        <h1 data-placeholder>" + wp_post['post_name'] + "</h1>\n        " + wp_post['post_content'] + "\n        ");
+        this.addTag(wp_post['tags_input'].join(','));
+    };
+    AddPostForm.prototype.formSubmit = function () {
         var el = document.createElement("DIV");
         el.innerHTML = editor.getContent();
         var title = el.querySelector('h1[data-placeholder]');
         el.removeChild(title);
-        el.removeChild(el.querySelector('div.medium-insert-buttons'));
+        var divBtns = el.querySelector('div.medium-insert-buttons');
+        if (divBtns)
+            el.removeChild(divBtns);
         this.form.querySelector('input[name=post-title]').setAttribute('value', title.innerText.trim());
         this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
         this.form.querySelector('input[name=post-tags]').setAttribute('value', this.tags.join(','));
@@ -128,13 +146,6 @@ var AddPostForm = /** @class */ (function () {
             this.form.submit();
         else
             return false;
-    };
-    AddPostForm.prototype.cancelClick = function () {
-        window.history.back();
-    };
-    AddPostForm.prototype.setPost = function () {
-        editor.setContent("\n        <h1 data-placeholder>" + wp_post['post_name'] + "</h1>\n        " + wp_post['post_content'] + "\n        ");
-        this.addTag(wp_post['tags_input'].join(','));
     };
     return AddPostForm;
 }());

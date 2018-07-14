@@ -23,7 +23,7 @@ if (
 		'post_content'  => $post_content,
 		'post_title'    => $post_title,
 		'post_category' => array( $post_category ),
-		'post_status'   => 'publish',                         //'draft' | 'publish' | 'pending'| 'future' | 'private'
+		'post_status'   => $_POST['post-status'],         //'draft' | 'publish' | 'pending'| 'future' | 'private'
 		'tags_input'    => $post_tags
 	);
 

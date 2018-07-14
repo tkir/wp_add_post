@@ -33,7 +33,8 @@ class AddPostForm {
         this.input.addEventListener('keydown', (e) => this.inputKeyDown(<KeyboardEvent>e));
         this.ul.addEventListener('click', (e) => this.removeTag(e));
         this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', () => this.submitClick());
-        this.form.querySelector('[data-btn=btnCancel]').addEventListener('click', ()=>this.cancelClick());
+        this.form.querySelector('[data-btn=btnCancel]').addEventListener('click', () => this.cancelClick());
+        this.form.querySelector('[data-btn=btnDraft]').addEventListener('click', () => this.draftClick());
 
         if (wp_post) setTimeout(() => this.setPost(), 1000);
     }
@@ -143,11 +144,36 @@ class AddPostForm {
 
     //form submit
     submitClick() {
+        this.form.querySelector('input[name=post-status]').setAttribute('value', 'publish');
+        this.formSubmit();
+    }
+
+    cancelClick() {
+        window.history.back();
+    }
+
+    draftClick() {
+        this.form.querySelector('input[name=post-status]').setAttribute('value', 'draft');
+        this.formSubmit();
+    }
+
+    private setPost() {
+        editor.setContent(`
+        <h1 data-placeholder>${wp_post['post_name']}</h1>
+        ${wp_post['post_content']}
+        `);
+
+        this.addTag(wp_post['tags_input'].join(','));
+    }
+
+    private formSubmit() {
         let el = document.createElement("DIV");
         el.innerHTML = editor.getContent();
         let title = <HTMLElement>el.querySelector('h1[data-placeholder]');
         el.removeChild(title);
-        el.removeChild(el.querySelector('div.medium-insert-buttons'));
+
+        let divBtns = el.querySelector('div.medium-insert-buttons');
+        if (divBtns) el.removeChild(divBtns);
 
         this.form.querySelector('input[name=post-title]').setAttribute('value', title.innerText.trim());
         this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
@@ -160,18 +186,5 @@ class AddPostForm {
         if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
             this.form.submit();
         else return false;
-    }
-
-    cancelClick(){
-        window.history.back();
-    }
-
-    private setPost() {
-        editor.setContent(`
-        <h1 data-placeholder>${wp_post['post_name']}</h1>
-        ${wp_post['post_content']}
-        `);
-
-        this.addTag(wp_post['tags_input'].join(','));
     }
 }

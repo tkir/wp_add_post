@@ -17,6 +17,7 @@ if ( isset( $_GET['id'] ) ) {
     <input type="hidden" name="post-title">
     <input type="hidden" name="post-data">
     <input type="hidden" name="post-tags">
+    <input type="hidden" name="post-status">
 
     <label class="" for="post-category">Категория</label>
 	<?php wp_dropdown_categories(
@@ -50,6 +51,7 @@ if ( isset( $_GET['id'] ) ) {
     </div>
 
     <button type="button" data-btn="btnCancel">Cancel</button>
+    <button type="button" data-btn="btnDraft">Draft</button>
     <button type="button" data-btn="btnSubmit">Publish</button>
 
 </form>
