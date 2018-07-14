@@ -12,10 +12,10 @@ if (
 	&& wp_verify_nonce( $_POST['add_post_nonce'], 'add_post_action' )
 	&& current_user_can( 'publish_posts' )
 ) {
-
 	$post_title   = $_POST['post-title'];
 	$post_content = $_POST['post-data'];
 	$post_category = $_POST['post-category'];
+	$post_tags = $_POST['post-tags'];
 
 	$new_post = array(
 		'ID'           => '',
@@ -23,7 +23,8 @@ if (
 		'post_content' => $post_content,
 		'post_title'   => $post_title,
 		'post_category' => array($post_category),
-		'post_status'  => 'publish'
+		'post_status'  => 'publish',                         //'draft' | 'publish' | 'pending'| 'future' | 'private'
+		'tags_input'    => $post_tags
 	);
 
 	if ( preg_match_all( '/\\\\"data:image\/([^;]*);base64,([^\\\\]*)\\\\"/', $post_content, $matches ) ) {

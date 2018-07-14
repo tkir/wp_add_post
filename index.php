@@ -31,6 +31,7 @@ Author URI: http://github.com/tkir/
 
 add_shortcode( 'wp_add_post', 'add_short' );
 function add_short() {
+	update_option('wp_add_post_id', get_the_ID());
 	ob_start();
 	include_once( 'form_add_post.php' );
 
@@ -39,6 +40,8 @@ function add_short() {
 
 add_action( 'wp_enqueue_scripts', 'true_include_script' );
 function true_include_script() {
+	if(get_the_ID()!=get_option('wp_add_post_id'))return;
+
 	wp_enqueue_style( 'style', plugin_dir_url( __FILE__ ) . 'css/style.css' );
 	wp_enqueue_script( 'scripts', plugin_dir_url( __FILE__ ) . 'js/scripts.js', false, false, true );
 	wp_deregister_script( 'jquery' );

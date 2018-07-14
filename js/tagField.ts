@@ -1,46 +1,50 @@
 declare const ajax_config: any;
 declare const $: any;
+declare const editor: any;
 
 class TagField {
+    private form: HTMLFormElement;
     private div: Element;
     private ul: Element;
     private liTpl: HTMLElement;
-    private btnTpl: HTMLButtonElement;
+    private btnTpl: HTMLTemplateElement;
     private input: HTMLInputElement;
     private btnPlus: HTMLButtonElement;
     private divAutocomplete: HTMLDivElement;
 
     private tags = [];
-    private tagsAutocomplete = [];
 
     public getTags() {
         return this.tags;
     }
 
     constructor() {
-        this.div = document.querySelector('#wp_add_post div[data-tags]');
+        this.form = document.querySelector('#wp_add_post ');
+        this.div = this.form.querySelector('div[data-tags]');
         this.ul = this.div.querySelector('ul');
         this.input = <HTMLInputElement>this.div.querySelector('input[type=text]');
-        this.btnPlus = <HTMLButtonElement>this.div.querySelector('input[type=button]');
+        this.btnPlus = <HTMLButtonElement>this.div.querySelector('[data-btn=btnPlus]');
         this.divAutocomplete = <HTMLDivElement>this.div.querySelector('div[data-autocomplete]');
-        this.btnTpl = <HTMLButtonElement>(<any>this.div.querySelector('template[data-template=btnAutocomplete]')).content;
+        this.btnTpl = <HTMLTemplateElement>(<any>this.div.querySelector('template[data-template=btnAutocomplete]'));
 
         this.btnPlus.addEventListener('click', () => this.addTagClick());
         this.input.addEventListener('input', () => this.inputInput());
         this.input.addEventListener('keydown', (e) => this.inputKeyDown(<KeyboardEvent>e));
         this.ul.addEventListener('click', (e) => this.removeTag(e));
+        this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', () => this.submitClick());
     }
 
     addTagClick() {
         this.input.value = this.input.value.trim();
 
-        if (this.input.value.length > 2){
+        if (this.input.value.length > 2) {
             this.addTag(this.input.value);
-            this.input.value = '';
         }
+
+        this.removeTagsBtns();
     }
 
-    private addTag(tag){
+    private addTag(tag) {
         if (!this.tags.some(t => t == tag)) {
             this.liTpl = <HTMLElement>(<HTMLTemplateElement>this.div.querySelector('template[data-template=liTag]'))
                 .content.cloneNode(true);
@@ -48,10 +52,12 @@ class TagField {
             this.ul.appendChild(this.liTpl);
             this.tags.push(tag);
         }
+        this.input.value='';
     }
 
     inputInput() {
         let val = this.input.value.trim();
+        this.removeTagsBtns();
 
         if (val.length > 2) {
 
@@ -75,18 +81,19 @@ class TagField {
     }
 
     inputKeyDown(e: KeyboardEvent) {
-        if (e.keyCode == 13) {
+        if (e.keyCode == 13 || e.keyCode == 188 || e.keyCode == 191) {
             this.btnPlus.click();
+            this.input.focus();
             e.preventDefault();
         }
-        else if (e.keyCode == 8 && this.input.value.trim() == '' && this.tags.length) {
+        else if (e.keyCode == 8 && this.input.value == '' && this.tags.length) {
             this.tags.pop();
             this.ul.removeChild(this.ul.lastElementChild);
         }
     }
 
     removeTag(e: Event) {
-        if (!this.tags.length)return;
+        if (!this.tags.length) return;
 
         let tag: string = (<HTMLElement>e.target).innerText;
         this.tags.splice(this.tags.indexOf(tag), 1);
@@ -100,19 +107,44 @@ class TagField {
         }
     }
 
+//добавляем кнопки тегов
     private setDivAutocomplete(tagsAutocomplete) {
-        this.tagsAutocomplete = tagsAutocomplete;
         tagsAutocomplete.forEach(t => {
-            let btnAuto = <Element>this.btnTpl.cloneNode(true);
+            let btnAuto = <Element>this.btnTpl.content.cloneNode(true);
             btnAuto.querySelector('span').innerText = t;
-            btnAuto.addEventListener('click', (e) => this.btnAutoClick(e));
             this.divAutocomplete.appendChild(btnAuto);
         });
+        [].forEach.call(this.divAutocomplete.children, el => {
+            if (el != this.btnTpl)
+                el.addEventListener('click', (e) => this.btnAutoClick(e));
+        })
+    }
 
-        this.divAutocomplete.classList.add('active');
+//удаляем кнопки предыдущих тегов
+    private removeTagsBtns() {
+        this.divAutocomplete.innerHTML = '';
+        this.divAutocomplete.appendChild(this.btnTpl);
     }
 
     btnAutoClick(e) {
         this.addTag(e.target.innerText);
+        e.preventDefault();
+    }
+
+    //form submit
+    submitClick() {
+        let el = document.createElement("DIV");
+        el.innerHTML = editor.getContent();
+        let title = <HTMLElement>el.querySelector('h1[data-placeholder]');
+        el.removeChild(title);
+        el.removeChild(el.querySelector('div.medium-insert-buttons'));
+
+        this.form.querySelector('input[name=post-title]').setAttribute('value', title.innerText.trim());
+        this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
+        this.form.querySelector('input[name=post-tags]').setAttribute('value', this.tags.join(','));
+
+        if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
+            this.form.submit();
+        else return false;
     }
 }

@@ -2,7 +2,6 @@
       method="post"
       name="add-post"
       enctype="multipart/form-data"
-      onsubmit="textProcessing();"
       action="<?php echo plugin_dir_url( __FILE__ ) . 'handler.php'; ?>">
 	<?php wp_nonce_field( 'add_post_action', 'add_post_nonce' ); ?>
 
@@ -31,17 +30,17 @@
             </template>
         </ul>
         <input type="text" placeholder="enter tag">
-        <input type="button" value="+">
+        <button type="button" data-btn="btnPlus">+</button>
 
 <!--        кнопки с автодобавлением тегов-->
-        <div data-autocomplete class="">
+        <div data-autocomplete>
             <template data-template="btnAutocomplete">
                 <button><span></span></button>
             </template>
         </div>
     </div>
 
-    <input type="submit" value="Publish" onsubmit="submitClick();">
+    <button type="button" data-btn="btnSubmit">Publish</button>
 
 </form>
 

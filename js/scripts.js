@@ -26,45 +26,22 @@ function mediumEditorInit() {
     });
 }
 
-function tagHandlerInit() {
-    $("#array_tag_handler").tagHandler({
-        assignedTags: ['C', 'Perl', 'PHP'],
-        availableTags: ['C', 'C++', 'C#', 'Java', 'Perl', 'PHP', 'Python'],
-        autocomplete: true
-    });
-}
-
-function submitClick() {
-    let el = document.createElement("DIV");
-    el.innerHTML = editor.getContent();
-    let title = el.querySelector('h1[data-placeholder]');
-    el.removeChild(title);
-    el.removeChild(el.querySelector('div.medium-insert-buttons'));
-
-    let form = document.querySelector('form[name=add-post]');
-    form.querySelector('input[name=post-title]').setAttribute('value', title.innerText.trim());
-    form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
-
-    if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
-        form.submit();
-    else return false;
-}
-
-var TagField = (function () {
+var TagField = /** @class */ (function () {
     function TagField() {
         var _this = this;
         this.tags = [];
-        this.tagsAutocomplete = [];
-        this.div = document.querySelector('#wp_add_post div[data-tags]');
+        this.form = document.querySelector('#wp_add_post ');
+        this.div = this.form.querySelector('div[data-tags]');
         this.ul = this.div.querySelector('ul');
         this.input = this.div.querySelector('input[type=text]');
-        this.btnPlus = this.div.querySelector('input[type=button]');
+        this.btnPlus = this.div.querySelector('[data-btn=btnPlus]');
         this.divAutocomplete = this.div.querySelector('div[data-autocomplete]');
-        this.btnTpl = this.div.querySelector('template[data-template=btnAutocomplete]').content;
+        this.btnTpl = this.div.querySelector('template[data-template=btnAutocomplete]');
         this.btnPlus.addEventListener('click', function () { return _this.addTagClick(); });
         this.input.addEventListener('input', function () { return _this.inputInput(); });
         this.input.addEventListener('keydown', function (e) { return _this.inputKeyDown(e); });
         this.ul.addEventListener('click', function (e) { return _this.removeTag(e); });
+        this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', function () { return _this.submitClick(); });
     }
     TagField.prototype.getTags = function () {
         return this.tags;
@@ -73,8 +50,8 @@ var TagField = (function () {
         this.input.value = this.input.value.trim();
         if (this.input.value.length > 2) {
             this.addTag(this.input.value);
-            this.input.value = '';
         }
+        this.removeTagsBtns();
     };
     TagField.prototype.addTag = function (tag) {
         if (!this.tags.some(function (t) { return t == tag; })) {
@@ -84,10 +61,12 @@ var TagField = (function () {
             this.ul.appendChild(this.liTpl);
             this.tags.push(tag);
         }
+        this.input.value = '';
     };
     TagField.prototype.inputInput = function () {
         var _this = this;
         var val = this.input.value.trim();
+        this.removeTagsBtns();
         if (val.length > 2) {
             $.ajax({
                 type: "POST",
@@ -107,11 +86,12 @@ var TagField = (function () {
         }
     };
     TagField.prototype.inputKeyDown = function (e) {
-        if (e.keyCode == 13) {
+        if (e.keyCode == 13 || e.keyCode == 188 || e.keyCode == 191) {
             this.btnPlus.click();
+            this.input.focus();
             e.preventDefault();
         }
-        else if (e.keyCode == 8 && this.input.value.trim() == '' && this.tags.length) {
+        else if (e.keyCode == 8 && this.input.value == '' && this.tags.length) {
             this.tags.pop();
             this.ul.removeChild(this.ul.lastElementChild);
         }
@@ -129,19 +109,42 @@ var TagField = (function () {
                 this.ul.removeChild(t);
         }
     };
+    //добавляем кнопки тегов
     TagField.prototype.setDivAutocomplete = function (tagsAutocomplete) {
         var _this = this;
-        this.tagsAutocomplete = tagsAutocomplete;
         tagsAutocomplete.forEach(function (t) {
-            var btnAuto = _this.btnTpl.cloneNode(true);
+            var btnAuto = _this.btnTpl.content.cloneNode(true);
             btnAuto.querySelector('span').innerText = t;
-            btnAuto.addEventListener('click', function (e) { return _this.btnAutoClick(e); });
             _this.divAutocomplete.appendChild(btnAuto);
         });
-        this.divAutocomplete.classList.add('active');
+        [].forEach.call(this.divAutocomplete.children, function (el) {
+            if (el != _this.btnTpl)
+                el.addEventListener('click', function (e) { return _this.btnAutoClick(e); });
+        });
+    };
+    //удаляем кнопки предыдущих тегов
+    TagField.prototype.removeTagsBtns = function () {
+        this.divAutocomplete.innerHTML = '';
+        this.divAutocomplete.appendChild(this.btnTpl);
     };
     TagField.prototype.btnAutoClick = function (e) {
         this.addTag(e.target.innerText);
+        e.preventDefault();
+    };
+    //form submit
+    TagField.prototype.submitClick = function () {
+        var el = document.createElement("DIV");
+        el.innerHTML = editor.getContent();
+        var title = el.querySelector('h1[data-placeholder]');
+        el.removeChild(title);
+        el.removeChild(el.querySelector('div.medium-insert-buttons'));
+        this.form.querySelector('input[name=post-title]').setAttribute('value', title.innerText.trim());
+        this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
+        this.form.querySelector('input[name=post-tags]').setAttribute('value', this.tags.join(','));
+        if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
+            this.form.submit();
+        else
+            return false;
     };
     return TagField;
 }());
