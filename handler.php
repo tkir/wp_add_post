@@ -12,18 +12,18 @@ if (
 	&& wp_verify_nonce( $_POST['add_post_nonce'], 'add_post_action' )
 	&& current_user_can( 'publish_posts' )
 ) {
-	$post_title   = $_POST['post-title'];
-	$post_content = $_POST['post-data'];
+	$post_title    = $_POST['post-title'];
+	$post_content  = $_POST['post-data'];
 	$post_category = $_POST['post-category'];
-	$post_tags = $_POST['post-tags'];
+	$post_tags     = $_POST['post-tags'];
 
 	$new_post = array(
-		'ID'           => '',
-		'post_author'  => $user->ID,
-		'post_content' => $post_content,
-		'post_title'   => $post_title,
-		'post_category' => array($post_category),
-		'post_status'  => 'publish',                         //'draft' | 'publish' | 'pending'| 'future' | 'private'
+		'ID'            => isset( $_POST['post-id'] ) ? $_POST['post-id'] : '',
+		'post_author'   => $user->ID,
+		'post_content'  => $post_content,
+		'post_title'    => $post_title,
+		'post_category' => array( $post_category ),
+		'post_status'   => 'publish',                         //'draft' | 'publish' | 'pending'| 'future' | 'private'
 		'tags_input'    => $post_tags
 	);
 
@@ -42,6 +42,6 @@ if (
 	}
 
 	$post_id = wp_insert_post( $new_post );
-	$post = get_post( $post_id );
+	$post    = get_post( $post_id );
 	wp_redirect( $post->guid );
 }

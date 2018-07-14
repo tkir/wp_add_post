@@ -1,8 +1,9 @@
 declare const ajax_config: any;
 declare const $: any;
 declare const editor: any;
+declare const wp_post: any;
 
-class TagField {
+class AddPostForm {
     private form: HTMLFormElement;
     private div: Element;
     private ul: Element;
@@ -32,7 +33,10 @@ class TagField {
         this.input.addEventListener('keydown', (e) => this.inputKeyDown(<KeyboardEvent>e));
         this.ul.addEventListener('click', (e) => this.removeTag(e));
         this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', () => this.submitClick());
+
+        if (wp_post) setTimeout(() => this.setPost(), 100);
     }
+
 
     addTagClick() {
         this.input.value = this.input.value.trim();
@@ -44,15 +48,20 @@ class TagField {
         this.removeTagsBtns();
     }
 
-    private addTag(tag) {
-        if (!this.tags.some(t => t == tag)) {
-            this.liTpl = <HTMLElement>(<HTMLTemplateElement>this.div.querySelector('template[data-template=liTag]'))
-                .content.cloneNode(true);
-            this.liTpl.querySelector('span').innerText = tag;
-            this.ul.appendChild(this.liTpl);
-            this.tags.push(tag);
-        }
-        this.input.value='';
+    private addTag(tags: string) {
+        let tagArr = tags.split(',');
+        tagArr.forEach(tag => {
+            tag = tag.trim();
+            if (!this.tags.some(t => t == tag)) {
+                this.liTpl = <HTMLElement>(<HTMLTemplateElement>this.div.querySelector('template[data-template=liTag]'))
+                    .content.cloneNode(true);
+                this.liTpl.querySelector('span').innerText = tag;
+                this.ul.appendChild(this.liTpl);
+                this.tags.push(tag);
+            }
+        });
+
+        this.input.value = '';
     }
 
     inputInput() {
@@ -143,8 +152,21 @@ class TagField {
         this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
         this.form.querySelector('input[name=post-tags]').setAttribute('value', this.tags.join(','));
 
+        if (wp_post) {
+            this.form.querySelector('input[name=post-id').setAttribute('value', wp_post['ID']);
+        }
+
         if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
             this.form.submit();
         else return false;
+    }
+
+    private setPost() {
+        editor.setContent(`
+        <h1 data-placeholder>${wp_post['post_name']}</h1>
+        ${wp_post['post_content']}
+        `);
+
+        this.addTag(wp_post['tags_input'].join(','));
     }
 }

@@ -1,6 +1,6 @@
 'use strict';
-let editor;
-
+var editor;
+var wp_post;
 function mediumEditorInit() {
     editor = new MediumEditor('.editable', {
         placeholder: false,
@@ -26,8 +26,8 @@ function mediumEditorInit() {
     });
 }
 
-var TagField = /** @class */ (function () {
-    function TagField() {
+var AddPostForm = /** @class */ (function () {
+    function AddPostForm() {
         var _this = this;
         this.tags = [];
         this.form = document.querySelector('#wp_add_post ');
@@ -42,28 +42,35 @@ var TagField = /** @class */ (function () {
         this.input.addEventListener('keydown', function (e) { return _this.inputKeyDown(e); });
         this.ul.addEventListener('click', function (e) { return _this.removeTag(e); });
         this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', function () { return _this.submitClick(); });
+        if (wp_post)
+            setTimeout(function () { return _this.setPost(); }, 100);
     }
-    TagField.prototype.getTags = function () {
+    AddPostForm.prototype.getTags = function () {
         return this.tags;
     };
-    TagField.prototype.addTagClick = function () {
+    AddPostForm.prototype.addTagClick = function () {
         this.input.value = this.input.value.trim();
         if (this.input.value.length > 2) {
             this.addTag(this.input.value);
         }
         this.removeTagsBtns();
     };
-    TagField.prototype.addTag = function (tag) {
-        if (!this.tags.some(function (t) { return t == tag; })) {
-            this.liTpl = this.div.querySelector('template[data-template=liTag]')
-                .content.cloneNode(true);
-            this.liTpl.querySelector('span').innerText = tag;
-            this.ul.appendChild(this.liTpl);
-            this.tags.push(tag);
-        }
+    AddPostForm.prototype.addTag = function (tags) {
+        var _this = this;
+        var tagArr = tags.split(',');
+        tagArr.forEach(function (tag) {
+            tag = tag.trim();
+            if (!_this.tags.some(function (t) { return t == tag; })) {
+                _this.liTpl = _this.div.querySelector('template[data-template=liTag]')
+                    .content.cloneNode(true);
+                _this.liTpl.querySelector('span').innerText = tag;
+                _this.ul.appendChild(_this.liTpl);
+                _this.tags.push(tag);
+            }
+        });
         this.input.value = '';
     };
-    TagField.prototype.inputInput = function () {
+    AddPostForm.prototype.inputInput = function () {
         var _this = this;
         var val = this.input.value.trim();
         this.removeTagsBtns();
@@ -85,7 +92,7 @@ var TagField = /** @class */ (function () {
             });
         }
     };
-    TagField.prototype.inputKeyDown = function (e) {
+    AddPostForm.prototype.inputKeyDown = function (e) {
         if (e.keyCode == 13 || e.keyCode == 188 || e.keyCode == 191) {
             this.btnPlus.click();
             this.input.focus();
@@ -96,7 +103,7 @@ var TagField = /** @class */ (function () {
             this.ul.removeChild(this.ul.lastElementChild);
         }
     };
-    TagField.prototype.removeTag = function (e) {
+    AddPostForm.prototype.removeTag = function (e) {
         if (!this.tags.length)
             return;
         var tag = e.target.innerText;
@@ -110,7 +117,7 @@ var TagField = /** @class */ (function () {
         }
     };
     //добавляем кнопки тегов
-    TagField.prototype.setDivAutocomplete = function (tagsAutocomplete) {
+    AddPostForm.prototype.setDivAutocomplete = function (tagsAutocomplete) {
         var _this = this;
         tagsAutocomplete.forEach(function (t) {
             var btnAuto = _this.btnTpl.content.cloneNode(true);
@@ -123,16 +130,16 @@ var TagField = /** @class */ (function () {
         });
     };
     //удаляем кнопки предыдущих тегов
-    TagField.prototype.removeTagsBtns = function () {
+    AddPostForm.prototype.removeTagsBtns = function () {
         this.divAutocomplete.innerHTML = '';
         this.divAutocomplete.appendChild(this.btnTpl);
     };
-    TagField.prototype.btnAutoClick = function (e) {
+    AddPostForm.prototype.btnAutoClick = function (e) {
         this.addTag(e.target.innerText);
         e.preventDefault();
     };
     //form submit
-    TagField.prototype.submitClick = function () {
+    AddPostForm.prototype.submitClick = function () {
         var el = document.createElement("DIV");
         el.innerHTML = editor.getContent();
         var title = el.querySelector('h1[data-placeholder]');
@@ -141,13 +148,20 @@ var TagField = /** @class */ (function () {
         this.form.querySelector('input[name=post-title]').setAttribute('value', title.innerText.trim());
         this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
         this.form.querySelector('input[name=post-tags]').setAttribute('value', this.tags.join(','));
+        if (wp_post) {
+            this.form.querySelector('input[name=post-id').setAttribute('value', wp_post['ID']);
+        }
         if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
             this.form.submit();
         else
             return false;
     };
-    return TagField;
+    AddPostForm.prototype.setPost = function () {
+        editor.setContent("\n        <h1 data-placeholder>" + wp_post['post_name'] + "</h1>\n        " + wp_post['post_content'] + "\n        ");
+        this.addTag(wp_post['tags_input'].join(','));
+    };
+    return AddPostForm;
 }());
 
 
-let tagField = new TagField();
+let addPostForm = new AddPostForm();

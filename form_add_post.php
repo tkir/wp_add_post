@@ -1,3 +1,11 @@
+<?php
+$id = false;
+if ( isset( $_GET['id'] ) ) {
+	$id = $_GET['id'];
+	wp_localize_script( 'scripts', 'wp_post', get_post($id, ARRAY_A));
+}
+?>
+
 <form id="wp_add_post"
       method="post"
       name="add-post"
@@ -5,6 +13,7 @@
       action="<?php echo plugin_dir_url( __FILE__ ) . 'handler.php'; ?>">
 	<?php wp_nonce_field( 'add_post_action', 'add_post_nonce' ); ?>
 
+    <input type="hidden" name="post-id">
     <input type="hidden" name="post-title">
     <input type="hidden" name="post-data">
     <input type="hidden" name="post-tags">
@@ -32,7 +41,7 @@
         <input type="text" placeholder="enter tag">
         <button type="button" data-btn="btnPlus">+</button>
 
-<!--        кнопки с автодобавлением тегов-->
+        <!--        кнопки с автодобавлением тегов-->
         <div data-autocomplete>
             <template data-template="btnAutocomplete">
                 <button><span></span></button>

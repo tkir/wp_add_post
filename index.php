@@ -29,9 +29,48 @@ Author URI: http://github.com/tkir/
  * Plugin initialization
  */
 
+register_activation_hook( __FILE__, 'on_activation' );
+function on_activation() {
+	$options = array(
+		'menu_order'     => 0,
+		//If new post is a page, sets the order should it appear in the tabs.
+		'comment_status' => 'closed',
+		//'closed' means no comments.
+		'ping_status'    => 'closed',
+		//Ping status?
+		'post_author'    => get_current_user_id(),
+		//The user ID number of the author.
+		'post_content'   => '[wp_add_post]',
+		'post_date'      => current_time( 'mysql' ),
+		//The time post was made.
+		'post_excerpt'   => 'constructor for creating perfect business cards',
+		//For all your post excerpt needs.
+		'post_name'      => 'wp_post_edit',
+		//The name (slug) for your post
+		'post_parent'    => 0,
+		//Sets the parent of the new post.
+		'post_status'    => 'publish',
+		//Set the status of the new post.
+		'post_title'     => 'Edit post',
+		//The title of your post.
+		'post_type'      => 'page',
+		//Sometimes you want to post a page.
+		'tags_input'     => ''
+		//For tags.
+	);
+	// Insert the post into the database
+	$page_id = wp_insert_post( $options );
+}
+
+register_deactivation_hook( __FILE__, 'on_deactivation' );
+function on_deactivation() {
+	delete_option( 'wp_add_post_id' );
+}
+
+
 add_shortcode( 'wp_add_post', 'add_short' );
 function add_short() {
-	update_option('wp_add_post_id', get_the_ID());
+	update_option( 'wp_add_post_id', get_the_ID() );
 	ob_start();
 	include_once( 'form_add_post.php' );
 
@@ -40,7 +79,9 @@ function add_short() {
 
 add_action( 'wp_enqueue_scripts', 'true_include_script' );
 function true_include_script() {
-	if(get_the_ID()!=get_option('wp_add_post_id'))return;
+	if ( get_the_ID() != get_option( 'wp_add_post_id' ) ) {
+		return;
+	}
 
 	wp_enqueue_style( 'style', plugin_dir_url( __FILE__ ) . 'css/style.css' );
 	wp_enqueue_script( 'scripts', plugin_dir_url( __FILE__ ) . 'js/scripts.js', false, false, true );
@@ -92,4 +133,11 @@ SELECT name FROM `wp_terms`
 	wp_die();
 }
 
+
+//редактируем ссылку на edit post
+add_filter( 'get_edit_post_link', 'change_edit_post_link', 10, 3 );
+function change_edit_post_link( $link, $post_id, $context ) {
+	$newLink = home_url() . "/wp_post_edit?id=$post_id";
+	return $newLink;
+}
 
