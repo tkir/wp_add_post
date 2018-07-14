@@ -140,4 +140,3 @@ function change_edit_post_link( $link, $post_id, $context ) {
 	$newLink = home_url() . "/wp_post_edit?id=$post_id";
 	return $newLink;
 }
-

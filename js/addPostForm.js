@@ -14,8 +14,9 @@ var AddPostForm = /** @class */ (function () {
         this.input.addEventListener('keydown', function (e) { return _this.inputKeyDown(e); });
         this.ul.addEventListener('click', function (e) { return _this.removeTag(e); });
         this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', function () { return _this.submitClick(); });
+        this.form.querySelector('[data-btn=btnCancel]').addEventListener('click', function () { return _this.cancelClick(); });
         if (wp_post)
-            setTimeout(function () { return _this.setPost(); }, 100);
+            setTimeout(function () { return _this.setPost(); }, 1000);
     }
     AddPostForm.prototype.getTags = function () {
         return this.tags;
@@ -127,6 +128,9 @@ var AddPostForm = /** @class */ (function () {
             this.form.submit();
         else
             return false;
+    };
+    AddPostForm.prototype.cancelClick = function () {
+        window.history.back();
     };
     AddPostForm.prototype.setPost = function () {
         editor.setContent("\n        <h1 data-placeholder>" + wp_post['post_name'] + "</h1>\n        " + wp_post['post_content'] + "\n        ");

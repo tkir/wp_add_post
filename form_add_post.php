@@ -49,6 +49,7 @@ if ( isset( $_GET['id'] ) ) {
         </div>
     </div>
 
+    <button type="button" data-btn="btnCancel">Cancel</button>
     <button type="button" data-btn="btnSubmit">Publish</button>
 
 </form>

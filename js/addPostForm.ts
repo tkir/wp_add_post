@@ -33,8 +33,9 @@ class AddPostForm {
         this.input.addEventListener('keydown', (e) => this.inputKeyDown(<KeyboardEvent>e));
         this.ul.addEventListener('click', (e) => this.removeTag(e));
         this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', () => this.submitClick());
+        this.form.querySelector('[data-btn=btnCancel]').addEventListener('click', ()=>this.cancelClick());
 
-        if (wp_post) setTimeout(() => this.setPost(), 100);
+        if (wp_post) setTimeout(() => this.setPost(), 1000);
     }
 
 
@@ -159,6 +160,10 @@ class AddPostForm {
         if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
             this.form.submit();
         else return false;
+    }
+
+    cancelClick(){
+        window.history.back();
     }
 
     private setPost() {
