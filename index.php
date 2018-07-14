@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: Add Post
+Plugin Name: Frontend post editor
 Plugin URI: http://tkir.github.io/wp_add_post
-Description: Wordpress plugin for adding post without admin
+Description: Wordpress plugin for editing post from frontend
 Version: 1.0
 Author: Kirill Titenko
 Author URI: http://github.com/tkir/
@@ -40,12 +40,12 @@ function on_activation() {
 		//Ping status?
 		'post_author'    => get_current_user_id(),
 		//The user ID number of the author.
-		'post_content'   => '[wp_add_post]',
+		'post_content'   => '[frontendPostEditor]',
 		'post_date'      => current_time( 'mysql' ),
 		//The time post was made.
-		'post_excerpt'   => 'constructor for creating perfect business cards',
+		'post_excerpt'   => 'Awesome post editor from frontend',
 		//For all your post excerpt needs.
-		'post_name'      => 'wp_post_edit',
+		'post_name'      => 'frontendPostEditor',
 		//The name (slug) for your post
 		'post_parent'    => 0,
 		//Sets the parent of the new post.
@@ -64,13 +64,13 @@ function on_activation() {
 
 register_deactivation_hook( __FILE__, 'on_deactivation' );
 function on_deactivation() {
-	delete_option( 'wp_add_post_id' );
+	delete_option( 'frontendPostEditor_id' );
 }
 
 
-add_shortcode( 'wp_add_post', 'add_short' );
+add_shortcode( 'frontendPostEditor', 'add_short' );
 function add_short() {
-	update_option( 'wp_add_post_id', get_the_ID() );
+	update_option( 'frontendPostEditor_id', get_the_ID() );
 	ob_start();
 	include_once( 'form_add_post.php' );
 
@@ -79,7 +79,7 @@ function add_short() {
 
 add_action( 'wp_enqueue_scripts', 'true_include_script' );
 function true_include_script() {
-	if ( get_the_ID() != get_option( 'wp_add_post_id' ) ) {
+	if ( get_the_ID() != get_option( 'frontendPostEditor_id' ) ) {
 		return;
 	}
 
@@ -139,4 +139,16 @@ add_filter( 'get_edit_post_link', 'change_edit_post_link', 10, 3 );
 function change_edit_post_link( $link, $post_id, $context ) {
 	$newLink = home_url() . "/wp_post_edit?id=$post_id";
 	return $newLink;
+}
+
+add_action('admin_menu', 'add_admin_menu');
+function add_admin_menu(){
+	add_options_page('Frontend Post Editor',
+		'FrontendPostEditor',
+		'edit_plugins',
+		'FrontendPostEditor',
+		'fpe_menuInsert');
+}
+function fpe_menuInsert(){
+	include_once('menu/general.php');
 }
