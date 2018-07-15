@@ -1,9 +1,9 @@
-declare const ajax_config: any;
+declare const fpeConfig: any;
 declare const $: any;
 declare const editor: any;
 declare const wp_post: any;
 
-class AddPostForm {
+class FPE_Form {
     private form: HTMLFormElement;
     private div: Element;
     private ul: Element;
@@ -74,10 +74,10 @@ class AddPostForm {
 
             $.ajax({
                 type: "POST",
-                url: ajax_config['path'],
+                url: fpeConfig['ajaxPath'],
                 data: {
-                    action: 'tag_autocomplete',
-                    nonce: ajax_config['nonce'],
+                    action: 'tag_autofill',
+                    nonce: fpeConfig['nonce'],
                     tag: val
                 },
                 success: (data) => {

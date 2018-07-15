@@ -1,33 +1,5 @@
-'use strict';
-var editor;
-var wp_post;
-function mediumEditorInit() {
-    editor = new MediumEditor('.editable', {
-        placeholder: false,
-        extensions: {
-            'multi_placeholder': new MediumEditorMultiPlaceholders({
-                placeholders: [
-                    {
-                        tag: 'h1',
-                        text: 'Title'
-                    },
-                    {
-                        tag: 'p',
-                        text: 'Tell your story...'
-                    }
-                ]
-            })
-        }
-    });
-    $(function () {
-        $('.editable').mediumInsert({
-            editor: editor
-        });
-    });
-}
-
-var AddPostForm = /** @class */ (function () {
-    function AddPostForm() {
+var FPE_Form = /** @class */ (function () {
+    function FPE_Form() {
         var _this = this;
         this.tags = [];
         this.form = document.querySelector('#wp_add_post ');
@@ -47,17 +19,17 @@ var AddPostForm = /** @class */ (function () {
         if (wp_post)
             setTimeout(function () { return _this.setPost(); }, 1000);
     }
-    AddPostForm.prototype.getTags = function () {
+    FPE_Form.prototype.getTags = function () {
         return this.tags;
     };
-    AddPostForm.prototype.addTagClick = function () {
+    FPE_Form.prototype.addTagClick = function () {
         this.input.value = this.input.value.trim();
         if (this.input.value.length > 2) {
             this.addTag(this.input.value);
         }
         this.removeTagsBtns();
     };
-    AddPostForm.prototype.addTag = function (tags) {
+    FPE_Form.prototype.addTag = function (tags) {
         var _this = this;
         var tagArr = tags.split(',');
         tagArr.forEach(function (tag) {
@@ -72,17 +44,17 @@ var AddPostForm = /** @class */ (function () {
         });
         this.input.value = '';
     };
-    AddPostForm.prototype.inputInput = function () {
+    FPE_Form.prototype.inputInput = function () {
         var _this = this;
         var val = this.input.value.trim();
         this.removeTagsBtns();
         if (val.length > 2) {
             $.ajax({
                 type: "POST",
-                url: ajax_config['path'],
+                url: fpeConfig['ajaxPath'],
                 data: {
-                    action: 'tag_autocomplete',
-                    nonce: ajax_config['nonce'],
+                    action: 'tag_autofill',
+                    nonce: fpeConfig['nonce'],
                     tag: val
                 },
                 success: function (data) {
@@ -94,7 +66,7 @@ var AddPostForm = /** @class */ (function () {
             });
         }
     };
-    AddPostForm.prototype.inputKeyDown = function (e) {
+    FPE_Form.prototype.inputKeyDown = function (e) {
         if (e.keyCode == 13 || e.keyCode == 188 || e.keyCode == 191) {
             this.btnPlus.click();
             this.input.focus();
@@ -105,7 +77,7 @@ var AddPostForm = /** @class */ (function () {
             this.ul.removeChild(this.ul.lastElementChild);
         }
     };
-    AddPostForm.prototype.removeTag = function (e) {
+    FPE_Form.prototype.removeTag = function (e) {
         if (!this.tags.length)
             return;
         var tag = e.target.innerText;
@@ -119,7 +91,7 @@ var AddPostForm = /** @class */ (function () {
         }
     };
     //добавляем кнопки тегов
-    AddPostForm.prototype.setDivAutocomplete = function (tagsAutocomplete) {
+    FPE_Form.prototype.setDivAutocomplete = function (tagsAutocomplete) {
         var _this = this;
         tagsAutocomplete.forEach(function (t) {
             var btnAuto = _this.btnTpl.content.cloneNode(true);
@@ -132,31 +104,31 @@ var AddPostForm = /** @class */ (function () {
         });
     };
     //удаляем кнопки предыдущих тегов
-    AddPostForm.prototype.removeTagsBtns = function () {
+    FPE_Form.prototype.removeTagsBtns = function () {
         this.divAutocomplete.innerHTML = '';
         this.divAutocomplete.appendChild(this.btnTpl);
     };
-    AddPostForm.prototype.btnAutoClick = function (e) {
+    FPE_Form.prototype.btnAutoClick = function (e) {
         this.addTag(e.target.innerText);
         e.preventDefault();
     };
     //form submit
-    AddPostForm.prototype.submitClick = function () {
+    FPE_Form.prototype.submitClick = function () {
         this.form.querySelector('input[name=post-status]').setAttribute('value', 'publish');
         this.formSubmit();
     };
-    AddPostForm.prototype.cancelClick = function () {
+    FPE_Form.prototype.cancelClick = function () {
         window.history.back();
     };
-    AddPostForm.prototype.draftClick = function () {
+    FPE_Form.prototype.draftClick = function () {
         this.form.querySelector('input[name=post-status]').setAttribute('value', 'draft');
         this.formSubmit();
     };
-    AddPostForm.prototype.setPost = function () {
+    FPE_Form.prototype.setPost = function () {
         editor.setContent("\n        <h1 data-placeholder>" + wp_post['post_name'] + "</h1>\n        " + wp_post['post_content'] + "\n        ");
         this.addTag(wp_post['tags_input'].join(','));
     };
-    AddPostForm.prototype.formSubmit = function () {
+    FPE_Form.prototype.formSubmit = function () {
         var el = document.createElement("DIV");
         el.innerHTML = editor.getContent();
         var title = el.querySelector('h1[data-placeholder]');
@@ -175,8 +147,5 @@ var AddPostForm = /** @class */ (function () {
         else
             return false;
     };
-    return AddPostForm;
+    return FPE_Form;
 }());
-
-
-let addPostForm = new AddPostForm();
