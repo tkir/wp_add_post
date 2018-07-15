@@ -86,6 +86,7 @@ class FPE_Initializer {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script' ) );
 		add_action( 'wp_ajax_tag_autofill', array( $this, 'ajaxTagAutofill' ) );
 		add_filter( 'get_edit_post_link', array( $this, 'changeEditPostLink' ), 10, 3 );
+		add_filter( 'the_title', array( $this, 'changeTitle' ), 10, 2 );
 	}
 
 	public function enqueue_script() {
@@ -151,6 +152,14 @@ SELECT name FROM `wp_terms`
 
 	public function changeEditPostLink( $link, $post_id, $context ) {
 		return home_url() . "/" . get_option( 'frontendPostEditor_slug' ) . "?id=$post_id";
+	}
+
+	public function changeTitle( $title, $id ) {
+		if ( $id == get_option( 'frontendPostEditor_id' ) ) {
+			return ( isset( $_GET['id'] ) ) ? get_option( 'frontendPostEditor_title_edit' ) : get_option( 'frontendPostEditor_title_create' );
+		} else {
+			return $title;
+		}
 	}
 
 //-----------------------------------------------------------------------------------------------------------------//

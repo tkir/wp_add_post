@@ -34,4 +34,4 @@ include_once 'menu/initializer.php';
 register_activation_hook( __FILE__, array( 'FPE_Initializer', 'onActivation' ) );
 register_deactivation_hook( __FILE__, array( 'FPE_Initializer', 'onDeactivation' ) );
 add_action( 'plugins_loaded', array( 'FPE_Initializer', 'init' ) );
-add_action( 'plugins_loaded', array( 'FPE_Menu_Initializer', 'init' ) );
+add_action( 'plugins_loaded', 'FPE_Menu_Initializer::init' );//array( 'FPE_Menu_Initializer', 'init' ) );
