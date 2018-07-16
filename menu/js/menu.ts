@@ -60,10 +60,10 @@ class UserTrust {
     }
 
     cBoxChange(e) {
-        this.ajaxTrustUpdate({userId: e.target.dataset.user, userTrust: e.target.checked});
+        this.ajaxTrustUpdate({userId: e.target.dataset.user, userTrust: +e.target.checked});
     }
 
-    private ajaxTrustUpdate(obj: { userId: number, userTrust: boolean }) {
+    private ajaxTrustUpdate(obj: { userId: number, userTrust: number }) {
         jQuery.ajax({
             type: "POST",
             url: fpeMenuConfig['ajaxPath'],

@@ -51,7 +51,7 @@ var UserTrust = /** @class */ (function () {
         [].forEach.call(this.checkBxs, function (cBox) { return cBox.addEventListener('change', function (e) { return _this.cBoxChange(e); }); });
     }
     UserTrust.prototype.cBoxChange = function (e) {
-        this.ajaxTrustUpdate({ userId: e.target.dataset.user, userTrust: e.target.checked });
+        this.ajaxTrustUpdate({ userId: e.target.dataset.user, userTrust: +e.target.checked });
     };
     UserTrust.prototype.ajaxTrustUpdate = function (obj) {
         jQuery.ajax({

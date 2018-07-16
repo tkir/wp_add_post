@@ -126,7 +126,7 @@ class FPE_Menu_Initializer {
 		}
 
 		$req = $_POST['body'];
-		if ( $req['userId'] && $req['userTrust'] ) {
+		if ( isset($req['userId']) && isset($req['userTrust']) ) {
 			update_user_meta( $req['userId'], 'fpeUserTrust', $req['userTrust'] );
 		}
 
@@ -141,7 +141,7 @@ class FPE_Menu_Initializer {
 
 	public function addUserRows( $val, $column_name, $user_id ) {
 		if ( $column_name == 'trust' ) {
-			$trusted = ( get_user_meta( $user_id, 'fpeUserTrust', true ) == 'true' ) ? 'checked' : '';
+			$trusted = get_user_meta( $user_id, 'fpeUserTrust', true ) ? 'checked' : '';
 
 			return "<input type='checkbox' data-user='$user_id' $trusted>";
 		}
@@ -150,7 +150,7 @@ class FPE_Menu_Initializer {
 	}
 
 	public function postStatusChange( $new_status, $old_status, $post ) {
-		if ( $new_status != 'publish' || $new_status != 'future' ) {
+		if ( $new_status != 'publish' && $new_status != 'future' ) {
 			return $new_status;
 		}
 
@@ -158,7 +158,7 @@ class FPE_Menu_Initializer {
 			return $old_status;
 		}
 
-		update_user_meta( $post['post_author'], 'fpeUserTrust', true );
+		update_user_meta( $post->post_author, 'fpeUserTrust', true );
 		return $new_status;
 	}
 }
