@@ -74,6 +74,7 @@ class FPE_Initializer {
 		update_option( 'frontendPostEditor_title_edit', 'Edit post' );
 		update_option( 'frontendPostEditor_title_create', 'Create post' );
 		update_option( 'frontendPostEditor_slug', 'frontendPostEditor' );
+		update_option( 'frontendPostEditor_user_access', 'publish_posts' );
 
 //		Medium editor MultiPlaceholders
 		update_option( 'frontendPostEditor_tag_title', 'h1' );
@@ -83,7 +84,7 @@ class FPE_Initializer {
 	}
 
 	private function addActions() {
-		add_shortcode( 'frontendPostEditor' , array( $this, 'pageContent' ) );
+		add_shortcode( 'frontendPostEditor', array( $this, 'pageContent' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script' ) );
 		add_action( 'wp_ajax_tag_autofill', array( $this, 'ajaxTagAutofill' ) );
 		add_filter( 'get_edit_post_link', array( $this, 'changeEditPostLink' ), 10, 3 );
@@ -123,16 +124,16 @@ class FPE_Initializer {
 		wp_localize_script( 'script_form', 'fpeConfig', $this->jsConfig() );
 	}
 
-	private function jsConfig(){
+	private function jsConfig() {
 		return array(
-			'ajaxPath' => admin_url( 'admin-ajax.php' ),
-			'nonce'    => wp_create_nonce( 'wp_ajax' ),
-			'tagTitle' => get_option( 'frontendPostEditor_tag_title' ),
-			'phTitle'  => get_option( 'frontendPostEditor_placeholder_title' ),
-			'tagBody'  => get_option( 'frontendPostEditor_tag_body' ),
-			'phBody'   => get_option( 'frontendPostEditor_placeholder_body' ),
-			'fpe_tag_title'=>get_option('frontendPostEditor_tag_title'),
-			'fpe_ph_title'=>get_option('frontendPostEditor_placeholder_title')
+			'ajaxPath'      => admin_url( 'admin-ajax.php' ),
+			'nonce'         => wp_create_nonce( 'wp_ajax' ),
+			'tagTitle'      => get_option( 'frontendPostEditor_tag_title' ),
+			'phTitle'       => get_option( 'frontendPostEditor_placeholder_title' ),
+			'tagBody'       => get_option( 'frontendPostEditor_tag_body' ),
+			'phBody'        => get_option( 'frontendPostEditor_placeholder_body' ),
+			'fpe_tag_title' => get_option( 'frontendPostEditor_tag_title' ),
+			'fpe_ph_title'  => get_option( 'frontendPostEditor_placeholder_title' )
 		);
 	}
 
@@ -158,7 +159,10 @@ SELECT name FROM `wp_terms`
 	}
 
 	public function changeEditPostLink( $link, $post_id, $context ) {
-		if(current_user_can('edit_others_posts'))return $link;
+		if ( current_user_can( 'edit_others_posts' ) ) {
+			return $link;
+		}
+
 		return home_url() . "/" . get_option( 'frontendPostEditor_slug' ) . "?id=$post_id";
 	}
 
@@ -190,6 +194,7 @@ SELECT name FROM `wp_terms`
 		delete_option( 'frontendPostEditor_title_edit' );
 		delete_option( 'frontendPostEditor_title_create' );
 		delete_option( 'frontendPostEditor_slug' );
+		delete_option( 'frontendPostEditor_user_access' );
 
 //		Medium editor MultiPlaceholders
 		delete_option( 'frontendPostEditor_tag_title' );

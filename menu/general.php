@@ -49,4 +49,17 @@
         </label>
         <button>Update</button>
     </div>
+
+    <div data-update="frontendPostEditor_user_access">
+        <label>User access
+            <select>
+                <option value="manage_sites" <?= get_option('frontendPostEditor_user_access')=='manage_sites'?'selected':'';?>>Super admin</option>
+                <option value="edit_users" <?= get_option('frontendPostEditor_user_access')=='edit_users'?'selected':'';?>>Admin</option>
+                <option value="edit_others_posts" <?= get_option('frontendPostEditor_user_access')=='edit_others_posts'?'selected':'';?>>Editor</option>
+                <option value="publish_posts" <?= get_option('frontendPostEditor_user_access')=='publish_posts'?'selected':'';?>>Author</option>
+                <option value="edit_posts" <?= get_option('frontendPostEditor_user_access')=='edit_posts'?'selected':'';?>>Contributor</option>
+                <option value="read" <?= get_option('frontendPostEditor_user_access')=='read'?'selected':'';?>>Subscriber</option>
+            </select>
+        </label>
+    </div>
 </div>

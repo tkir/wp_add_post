@@ -3,11 +3,16 @@ declare const jQuery: any;
 
 class MenuGeneral {
     private divArr: [{ name: string, input: HTMLInputElement, button: HTMLButtonElement }];
+    private selectAccess: HTMLSelectElement;
 
     constructor() {
+        this.selectAccess = document.querySelector('#fpe-menuGeneral div[data-update=frontendPostEditor_user_access] select');
+        this.selectAccess.addEventListener('change', (e) => this.selectAccessChange(e));
+
         let arr = document.querySelectorAll('#fpe-menuGeneral div[data-update]');
         this.divArr = [].map.call(arr, (div) => {
             let btn = div.querySelector('button');
+            if (!btn) return;
             btn.addEventListener('click', (e) => this.btnUpdateClick(e));
             return {
                 name: div.getAttribute('data-update'),
@@ -16,6 +21,13 @@ class MenuGeneral {
             }
         });
 
+    }
+
+    public selectAccessChange(e) {
+        this.ajaxUpdate({
+            name: this.selectAccess.getAttribute('data-update'),
+            data: this.selectAccess.value
+        });
     }
 
     public btnUpdateClick(e) {

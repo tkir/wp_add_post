@@ -1,9 +1,13 @@
 var MenuGeneral = /** @class */ (function () {
     function MenuGeneral() {
         var _this = this;
+        this.selectAccess = document.querySelector('#fpe-menuGeneral div[data-update=frontendPostEditor_user_access] select');
+        this.selectAccess.addEventListener('change', function (e) { return _this.selectAccessChange(e); });
         var arr = document.querySelectorAll('#fpe-menuGeneral div[data-update]');
         this.divArr = [].map.call(arr, function (div) {
             var btn = div.querySelector('button');
+            if (!btn)
+                return;
             btn.addEventListener('click', function (e) { return _this.btnUpdateClick(e); });
             return {
                 name: div.getAttribute('data-update'),
@@ -12,6 +16,12 @@ var MenuGeneral = /** @class */ (function () {
             };
         });
     }
+    MenuGeneral.prototype.selectAccessChange = function (e) {
+        this.ajaxUpdate({
+            name: this.selectAccess.getAttribute('data-update'),
+            data: this.selectAccess.value
+        });
+    };
     MenuGeneral.prototype.btnUpdateClick = function (e) {
         var _this = this;
         this.divArr.forEach(function (div) {

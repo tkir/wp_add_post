@@ -1,3 +1,7 @@
+<?php if(!current_user_can(get_option('frontendPostEditor_user_access'))):?>
+<script>window.history.back();</script>
+<?php endif;?>
+
 <?php
 $id = false;
 if ( isset( $_GET['id'] ) ) {
