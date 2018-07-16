@@ -117,7 +117,7 @@ class FPE_Initializer {
 		wp_enqueue_style( 'medium-editor-insert-plugin-css', 'https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/css/medium-editor-insert-plugin.min.css' );
 		wp_enqueue_script( 'medium-editor-insert-plugin-js', 'https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/js/medium-editor-insert-plugin.min.js', false, false, true );
 
-		wp_enqueue_script( 'Multiplaceholders', plugin_dir_url( __DIR__ ) . 'medium_editor/Multiplaceholders/medium-editor-multi-placeholders-plugin.min.js', false, false, true );
+		wp_enqueue_script( 'Multiplaceholders', plugin_dir_url( __DIR__ ) . 'medium_editor/MultiPlaceholders/medium-editor-multi-placeholders-plugin.min.js', false, false, true );
 		wp_add_inline_script( 'Multiplaceholders', "mediumEditorInit();" );
 
 		wp_localize_script( 'script_form', 'fpeConfig', $this->jsConfig() );

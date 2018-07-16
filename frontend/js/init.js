@@ -19,7 +19,7 @@ function mediumEditorInit() {
         }
     });
     $(function () {
-        $('.editable').mediumInsert({
+        $('#fpeForm [data-editor]').mediumInsert({
             editor: editor
         });
     });
