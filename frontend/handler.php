@@ -42,6 +42,12 @@ if (
 	}
 
 	$post_id = wp_insert_post( $new_post );
-	$post    = get_post( $post_id );
+
+	if ( isset( $_FILES['post-thumbnail'] ) ) {
+		$attachment_id = media_handle_upload( 'post-thumbnail', $post_id );
+		set_post_thumbnail( $post_id, $attachment_id );
+	}
+
+	$post = get_post( $post_id );
 	wp_redirect( $post->guid );
 }
