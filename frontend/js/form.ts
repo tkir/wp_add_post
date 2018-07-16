@@ -157,7 +157,7 @@ class FPE_Form {
 
     //form submit
     submitClick() {
-        this.form.querySelector('input[name=post-status]').setAttribute('value', 'publish');
+        this.form.querySelector('input[name=post-status]').setAttribute('value', 'pending');
         this.formSubmit();
     }
 
@@ -177,7 +177,7 @@ class FPE_Form {
         ${fpe_post['post_content']}
         `);
 
-        this.addTag(fpe_post['tags_input'].join(','));
+        if (fpe_post['tags_input'] != undefined && fpe_post['tags_input'] != '') this.addTag(fpe_post['tags_input'].join(','));
         if (fpe_post['post-thumb']) this.divThumbnail.querySelector('img').src = fpe_post['post-thumb'];
     }
 

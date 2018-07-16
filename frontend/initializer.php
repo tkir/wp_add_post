@@ -158,6 +158,7 @@ SELECT name FROM `wp_terms`
 	}
 
 	public function changeEditPostLink( $link, $post_id, $context ) {
+		if(current_user_can('edit_others_posts'))return $link;
 		return home_url() . "/" . get_option( 'frontendPostEditor_slug' ) . "?id=$post_id";
 	}
 

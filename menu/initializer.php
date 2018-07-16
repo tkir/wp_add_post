@@ -28,8 +28,12 @@ class FPE_Menu_Initializer {
 			add_action( 'wp_ajax_fpe_userTrust', array( $this, 'ajaxMenuUserTrust' ) );
 		}
 
+//		добавляют столбец в вкладке User
 		add_filter( 'manage_users_columns', array( $this, 'addUserColumn' ) );
 		add_filter( 'manage_users_custom_column', array( $this, 'addUserRows' ), 10, 3 );
+
+//		изменение статуса поста
+		add_filter( 'transition_post_status', array( $this, 'postStatusChange' ), 10, 3 );
 	}
 
 	public function addMenuGeneral() {
@@ -143,5 +147,18 @@ class FPE_Menu_Initializer {
 		}
 
 		return $val;
+	}
+
+	public function postStatusChange( $new_status, $old_status, $post ) {
+		if ( $new_status != 'publish' || $new_status != 'future' ) {
+			return $new_status;
+		}
+
+		if ( ! current_user_can( 'edit_users' ) ) {
+			return $old_status;
+		}
+
+		update_user_meta( $post['post_author'], 'fpeUserTrust', true );
+		return $new_status;
 	}
 }

@@ -128,7 +128,7 @@ var FPE_Form = /** @class */ (function () {
     };
     //form submit
     FPE_Form.prototype.submitClick = function () {
-        this.form.querySelector('input[name=post-status]').setAttribute('value', 'publish');
+        this.form.querySelector('input[name=post-status]').setAttribute('value', 'pending');
         this.formSubmit();
     };
     FPE_Form.prototype.cancelClick = function () {
@@ -141,7 +141,8 @@ var FPE_Form = /** @class */ (function () {
     //Редактирование поста
     FPE_Form.prototype.setPost = function () {
         editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\">" + fpe_post['post_name'] + "</h1>\n        " + fpe_post['post_content'] + "\n        ");
-        this.addTag(fpe_post['tags_input'].join(','));
+        if (fpe_post['tags_input'] != undefined && fpe_post['tags_input'] != '')
+            this.addTag(fpe_post['tags_input'].join(','));
         if (fpe_post['post-thumb'])
             this.divThumbnail.querySelector('img').src = fpe_post['post-thumb'];
     };
