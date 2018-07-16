@@ -25,7 +25,11 @@ class FPE_Menu_Initializer {
 		add_action( 'admin_menu', array( $this, 'addMenuGeneral' ) );
 		if ( defined( 'DOING_AJAX' ) ) {
 			add_action( 'wp_ajax_fpe_menuGeneral', array( $this, 'ajaxMenuGeneralUpdate' ) );
+			add_action( 'wp_ajax_fpe_userTrust', array( $this, 'ajaxMenuUserTrust' ) );
 		}
+
+		add_filter( 'manage_users_columns', array( $this, 'addUserColumn' ) );
+		add_filter( 'manage_users_custom_column', array( $this, 'addUserRows' ), 10, 3 );
 	}
 
 	public function addMenuGeneral() {
@@ -42,7 +46,7 @@ class FPE_Menu_Initializer {
 		wp_enqueue_script( 'jquery' );
 
 		wp_enqueue_style( 'style', plugin_dir_url( __FILE__ ) . 'css/style.css' );
-		wp_enqueue_script( 'script', plugin_dir_url( __FILE__ ) . 'js/menuGeneral.js', false, false, true );
+		wp_enqueue_script( 'script', plugin_dir_url( __FILE__ ) . 'js/menu.js', false, false, true );
 
 		wp_localize_script( 'script', 'fpeMenuConfig', array(
 			'ajaxPath' => admin_url( 'admin-ajax.php' ),
@@ -58,14 +62,45 @@ class FPE_Menu_Initializer {
 		}
 
 		$req = $_POST['body'];
-		if($req['name']=='frontendPostEditor_slug'){
-			$req['data']=str_replace(array('~', '`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '=', '+', '[',']','{','}', ':',';','"', "'", '|',
-				'<', '>', ',', '.', '?', '/', ' ', '\/'), '', $req['data']);
-			$req['data']=esc_sql($req['data']);
-			wp_update_post(array(
-				'ID'=>get_option('frontendPostEditor_id'),
-				'post_name'      => $req['data'],
-			));
+		if ( $req['name'] == 'frontendPostEditor_slug' ) {
+			$req['data'] = str_replace( array(
+				'~',
+				'`',
+				'!',
+				'@',
+				'#',
+				'$',
+				'%',
+				'^',
+				'&',
+				'*',
+				'(',
+				')',
+				'=',
+				'+',
+				'[',
+				']',
+				'{',
+				'}',
+				':',
+				';',
+				'"',
+				"'",
+				'|',
+				'<',
+				'>',
+				',',
+				'.',
+				'?',
+				'/',
+				' ',
+				'\/'
+			), '', $req['data'] );
+			$req['data'] = esc_sql( $req['data'] );
+			wp_update_post( array(
+				'ID'        => get_option( 'frontendPostEditor_id' ),
+				'post_name' => $req['data'],
+			) );
 		}
 		update_option( esc_sql( $req['name'] ), esc_sql( $req['data'] ) );
 
@@ -77,5 +112,36 @@ class FPE_Menu_Initializer {
 		echo json_encode( $response );
 
 		wp_die();
+	}
+
+	public function ajaxMenuUserTrust() {
+		$nonce = $_POST['nonce'];
+		if ( ! wp_verify_nonce( $nonce, 'wp_menu_ajax' ) &&
+		     ! current_user_can( 'edit_users' ) ) {
+			die ( 'Busted!' );
+		}
+
+		$req = $_POST['body'];
+		if ( $req['userId'] && $req['userTrust'] ) {
+			update_user_meta( $req['userId'], 'fpeUserTrust', $req['userTrust'] );
+		}
+
+		wp_die();
+	}
+
+	public function addUserColumn( $columns ) {
+		$columns['trust'] = 'Post trust';
+
+		return $columns;
+	}
+
+	public function addUserRows( $val, $column_name, $user_id ) {
+		if ( $column_name == 'trust' ) {
+			$trusted = ( get_user_meta( $user_id, 'fpeUserTrust', true ) == 'true' ) ? 'checked' : '';
+
+			return "<input type='checkbox' data-user='$user_id' $trusted>";
+		}
+
+		return $val;
 	}
 }

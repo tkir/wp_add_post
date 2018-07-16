@@ -25,15 +25,9 @@ if ( isset( $_GET['id'] ) ) {
     <input type="hidden" name="post-tags">
     <input type="hidden" name="post-status">
 
-    <!--    TODO проверить работу категорий, менять категорию при редактировании поста-->
-
-<!--    <pre>--><?//= print_r( get_categories( array( 'hide_empty' => 0 ) ) ); ?><!--</pre>-->
     <label class="" for="post-category">Категория
 		<?php wp_dropdown_categories(
 			array(
-//				'show_option_all'  => 'Select category',
-//				'show_option_none' => 'No category',
-//				'show_count'       => true,
 				'class'        => '',                 //сюда выставить классы для select
 				'name'         => 'post-category',
 				'hierarchical' => 1,                  //выводить сплошным списком или иерархией

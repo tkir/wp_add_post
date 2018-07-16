@@ -44,3 +44,32 @@ var MenuGeneral = /** @class */ (function () {
 }());
 if (document.querySelector('#fpe-menuGeneral'))
     var menuGeneral = new MenuGeneral();
+var UserTrust = /** @class */ (function () {
+    function UserTrust() {
+        var _this = this;
+        this.checkBxs = document.querySelectorAll('input[data-user]');
+        [].forEach.call(this.checkBxs, function (cBox) { return cBox.addEventListener('change', function (e) { return _this.cBoxChange(e); }); });
+    }
+    UserTrust.prototype.cBoxChange = function (e) {
+        this.ajaxTrustUpdate({ userId: e.target.dataset.user, userTrust: e.target.checked });
+    };
+    UserTrust.prototype.ajaxTrustUpdate = function (obj) {
+        jQuery.ajax({
+            type: "POST",
+            url: fpeMenuConfig['ajaxPath'],
+            data: {
+                action: 'fpe_userTrust',
+                nonce: fpeMenuConfig['nonce'],
+                body: obj
+            },
+            success: function (res) {
+            },
+            error: function (error) {
+                console.error(error.statusText);
+            }
+        });
+    };
+    return UserTrust;
+}());
+if (document.querySelector('[data-user]'))
+    var userTrust = new UserTrust();
