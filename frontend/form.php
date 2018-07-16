@@ -1,12 +1,18 @@
 <?php
 $id = false;
 if ( isset( $_GET['id'] ) ) {
-	$id = $_GET['id'];
-	wp_localize_script( 'scripts', 'wp_post', get_post( $id, ARRAY_A ) );
+	$id       = $_GET['id'];
+	$postData = get_post( $id, ARRAY_A );
+
+	if ( get_the_post_thumbnail_url($id) ) {
+		$postData['post-thumb'] = get_the_post_thumbnail_url($id);
+	}
+
+	wp_localize_script( 'script_form', 'fpe_post', $postData );
 }
 ?>
 
-<form id="wp_add_post"
+<form id="fpeForm"
       method="post"
       name="add-post"
       enctype="multipart/form-data"
@@ -19,7 +25,7 @@ if ( isset( $_GET['id'] ) ) {
     <input type="hidden" name="post-tags">
     <input type="hidden" name="post-status">
 
-<!--    TODO проверить работу категорий, менять категорию при редактировании поста-->
+    <!--    TODO проверить работу категорий, менять категорию при редактировании поста-->
     <label class="" for="post-category">Категория
 		<?php wp_dropdown_categories(
 			array(
@@ -33,7 +39,7 @@ if ( isset( $_GET['id'] ) ) {
 		); ?>
     </label>
 
-    <div class="editable"></div>
+    <div data-editor></div>
 
     <div data-tags>
         <ul>
@@ -54,7 +60,8 @@ if ( isset( $_GET['id'] ) ) {
 
     <div data-thumbnail>
         <label> Thumbnail
-        <input type="file" name="post-thumbnail" multiple="false">
+            <input type="file" name="post-thumbnail" multiple="false">
+            <img>
         </label>
     </div>
 
@@ -63,4 +70,3 @@ if ( isset( $_GET['id'] ) ) {
     <button type="button" data-btn="btnSubmit">Publish</button>
 
 </form>
-

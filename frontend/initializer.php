@@ -40,7 +40,7 @@ class FPE_Initializer {
 			//Ping status?
 			'post_author'    => get_current_user_id(),
 			//The user ID number of the author.
-			'post_content'   => $this->pageContent(),
+			'post_content'   => '[frontendPostEditor]',
 			'post_date'      => current_time( 'mysql' ),
 			//The time post was made.
 			'post_excerpt'   => 'Awesome post editor from frontend',
@@ -62,7 +62,7 @@ class FPE_Initializer {
 		$this->pageId = wp_insert_post( $options );
 	}
 
-	private function pageContent() {
+	public function pageContent() {
 		ob_start();
 		include_once( 'form.php' );
 
@@ -83,6 +83,7 @@ class FPE_Initializer {
 	}
 
 	private function addActions() {
+		add_shortcode( 'frontendPostEditor' , array( $this, 'pageContent' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script' ) );
 		add_action( 'wp_ajax_tag_autofill', array( $this, 'ajaxTagAutofill' ) );
 		add_filter( 'get_edit_post_link', array( $this, 'changeEditPostLink' ), 10, 3 );

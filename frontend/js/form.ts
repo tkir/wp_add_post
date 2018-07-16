@@ -1,7 +1,7 @@
 declare const fpeConfig: any;
 declare const $: any;
 declare const editor: any;
-declare const wp_post: any;
+declare const fpe_post: any;
 
 class FPE_Form {
     private form: HTMLFormElement;
@@ -12,6 +12,7 @@ class FPE_Form {
     private input: HTMLInputElement;
     private btnPlus: HTMLButtonElement;
     private divAutocomplete: HTMLDivElement;
+    private divThumbnail: HTMLDivElement;
 
     private tags = [];
 
@@ -20,13 +21,14 @@ class FPE_Form {
     }
 
     constructor() {
-        this.form = document.querySelector('#wp_add_post ');
+        this.form = document.querySelector('#fpeForm ');
         this.div = this.form.querySelector('div[data-tags]');
         this.ul = this.div.querySelector('ul');
         this.input = <HTMLInputElement>this.div.querySelector('input[type=text]');
         this.btnPlus = <HTMLButtonElement>this.div.querySelector('[data-btn=btnPlus]');
         this.divAutocomplete = <HTMLDivElement>this.div.querySelector('div[data-autocomplete]');
         this.btnTpl = <HTMLTemplateElement>(<any>this.div.querySelector('template[data-template=btnAutocomplete]'));
+        this.divThumbnail = <HTMLDivElement>this.form.querySelector('div[data-thumbnail]');
 
         this.btnPlus.addEventListener('click', () => this.addTagClick());
         this.input.addEventListener('input', () => this.inputInput());
@@ -35,10 +37,10 @@ class FPE_Form {
         this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', () => this.submitClick());
         this.form.querySelector('[data-btn=btnCancel]').addEventListener('click', () => this.cancelClick());
         this.form.querySelector('[data-btn=btnDraft]').addEventListener('click', () => this.draftClick());
+        this.divThumbnail.querySelector('input[type=file]').addEventListener('change', (e) => this.thumbnailLoaded(e));
 
-        if (wp_post) setTimeout(() => this.setPost(), 1000);
+        if (typeof fpe_post !== 'undefined') setTimeout(() => this.setPost(), 1000);
     }
-
 
     addTagClick() {
         this.input.value = this.input.value.trim();
@@ -139,7 +141,18 @@ class FPE_Form {
 
     btnAutoClick(e) {
         this.addTag(e.target.innerText);
+        this.removeTagsBtns();
         e.preventDefault();
+    }
+
+    //preview loaded image
+    thumbnailLoaded(e) {
+        if (!e.target.files || !e.target.files[0]) return;
+
+        let reader = new FileReader();
+        reader.onload = () =>
+            this.divThumbnail.querySelector('img').src = reader.result;
+        reader.readAsDataURL(e.target.files[0]);
     }
 
     //form submit
@@ -157,13 +170,16 @@ class FPE_Form {
         this.formSubmit();
     }
 
+    //Редактирование поста
+    //TODO взять из options теги и placeholders
     private setPost() {
         editor.setContent(`
-        <h1 data-placeholder>${wp_post['post_name']}</h1>
-        ${wp_post['post_content']}
+        <h1 data-placeholder>${fpe_post['post_name']}</h1>
+        ${fpe_post['post_content']}
         `);
 
-        this.addTag(wp_post['tags_input'].join(','));
+        this.addTag(fpe_post['tags_input'].join(','));
+        if (fpe_post['post-thumb']) this.divThumbnail.querySelector('img').src = fpe_post['post-thumb'];
     }
 
     private formSubmit() {
@@ -179,8 +195,8 @@ class FPE_Form {
         this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
         this.form.querySelector('input[name=post-tags]').setAttribute('value', this.tags.join(','));
 
-        if (wp_post) {
-            this.form.querySelector('input[name=post-id').setAttribute('value', wp_post['ID']);
+        if (fpe_post) {
+            this.form.querySelector('input[name=post-id').setAttribute('value', fpe_post['ID']);
         }
 
         if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
@@ -188,3 +204,5 @@ class FPE_Form {
         else return false;
     }
 }
+
+var fpeForm = new FPE_Form();

@@ -1,8 +1,7 @@
 'use strict';
 var editor;
-var wp_post;
 function mediumEditorInit() {
-    editor = new MediumEditor('.editable', {
+    editor = new MediumEditor('#fpeForm [data-editor]', {
         placeholder: false,
         extensions: {
             'multi_placeholder': new MediumEditorMultiPlaceholders({
@@ -25,5 +24,3 @@ function mediumEditorInit() {
         });
     });
 }
-
-let fpeForm = new FPE_Form();
