@@ -120,14 +120,20 @@ class FPE_Initializer {
 		wp_enqueue_script( 'Multiplaceholders', plugin_dir_url( __DIR__ ) . 'medium_editor/Multiplaceholders/medium-editor-multi-placeholders-plugin.min.js', false, false, true );
 		wp_add_inline_script( 'Multiplaceholders', "mediumEditorInit();" );
 
-		wp_localize_script( 'script_form', 'fpeConfig', array(
+		wp_localize_script( 'script_form', 'fpeConfig', $this->jsConfig() );
+	}
+
+	private function jsConfig(){
+		return array(
 			'ajaxPath' => admin_url( 'admin-ajax.php' ),
 			'nonce'    => wp_create_nonce( 'wp_ajax' ),
 			'tagTitle' => get_option( 'frontendPostEditor_tag_title' ),
 			'phTitle'  => get_option( 'frontendPostEditor_placeholder_title' ),
 			'tagBody'  => get_option( 'frontendPostEditor_tag_body' ),
 			'phBody'   => get_option( 'frontendPostEditor_placeholder_body' ),
-		) );
+			'fpe_tag_title'=>get_option('frontendPostEditor_tag_title'),
+			'fpe_ph_title'=>get_option('frontendPostEditor_placeholder_title')
+		);
 	}
 
 	public function ajaxTagAutofill() {

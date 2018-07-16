@@ -139,9 +139,8 @@ var FPE_Form = /** @class */ (function () {
         this.formSubmit();
     };
     //Редактирование поста
-    //TODO взять из options теги и placeholders
     FPE_Form.prototype.setPost = function () {
-        editor.setContent("\n        <h1 data-placeholder>" + fpe_post['post_name'] + "</h1>\n        " + fpe_post['post_content'] + "\n        ");
+        editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\">" + fpe_post['post_name'] + "</h1>\n        " + fpe_post['post_content'] + "\n        ");
         this.addTag(fpe_post['tags_input'].join(','));
         if (fpe_post['post-thumb'])
             this.divThumbnail.querySelector('img').src = fpe_post['post-thumb'];

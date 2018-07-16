@@ -171,10 +171,9 @@ class FPE_Form {
     }
 
     //Редактирование поста
-    //TODO взять из options теги и placeholders
     private setPost() {
         editor.setContent(`
-        <h1 data-placeholder>${fpe_post['post_name']}</h1>
+        <${fpeConfig['fpe_tag_title']} data-placeholder="${fpeConfig['fpe_ph_title']}">${fpe_post['post_name']}</h1>
         ${fpe_post['post_content']}
         `);
 
