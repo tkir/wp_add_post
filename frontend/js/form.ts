@@ -194,7 +194,7 @@ class FPE_Form {
         this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
         this.form.querySelector('input[name=post-tags]').setAttribute('value', this.tags.join(','));
 
-        if (fpe_post) {
+        if (typeof fpe_post !== 'undefined') {
             this.form.querySelector('input[name=post-id').setAttribute('value', fpe_post['ID']);
         }
 

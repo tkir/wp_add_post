@@ -17,7 +17,7 @@ if (
 	$post_category = $_POST['post-category'];
 	$post_tags     = $_POST['post-tags'];
 
-	$new_post = array(
+	$postData = array(
 		'ID'            => isset( $_POST['post-id'] ) ? $_POST['post-id'] : '',
 		'post_author'   => $user->ID,
 		'post_content'  => $post_content,
@@ -41,11 +41,11 @@ if (
 		}
 	}
 
-	$post_id = wp_insert_post( $new_post );
+	$post_id = ( $_POST['post-id'] ) ? wp_update_post( $postData ) : wp_insert_post( $postData );
 
-	if ( isset( $_FILES['post-thumbnail'] ) ) {
-		$attachment_id = media_handle_upload( 'post-thumbnail', $post_id );
-		set_post_thumbnail( $post_id, $attachment_id );
+	if ( isset( $_FILES['post-thumbnail'] ) &&  $_FILES['post-thumbnail']['size']) {
+		$thumbId = media_handle_upload( 'post-thumbnail', $post_id );
+		set_post_thumbnail( $post_id, $thumbId );
 	}
 
 	$post = get_post( $post_id );
