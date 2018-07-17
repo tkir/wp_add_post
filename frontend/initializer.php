@@ -74,7 +74,10 @@ class FPE_Initializer {
 		update_option( 'frontendPostEditor_title_edit', 'Edit post' );
 		update_option( 'frontendPostEditor_title_create', 'Create post' );
 		update_option( 'frontendPostEditor_slug', 'frontendPostEditor' );
+
+//		policy
 		update_option( 'frontendPostEditor_user_access', 'publish_posts' );
+		update_option('frontendPostEditor_trust_policy', 'after_first');
 
 //		Medium editor MultiPlaceholders
 		update_option( 'frontendPostEditor_tag_title', 'h1' );
@@ -194,7 +197,10 @@ SELECT name FROM `wp_terms`
 		delete_option( 'frontendPostEditor_title_edit' );
 		delete_option( 'frontendPostEditor_title_create' );
 		delete_option( 'frontendPostEditor_slug' );
+
+//		policy
 		delete_option( 'frontendPostEditor_user_access' );
+		delete_option('frontendPostEditor_trust_policy');
 
 //		Medium editor MultiPlaceholders
 		delete_option( 'frontendPostEditor_tag_title' );

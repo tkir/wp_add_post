@@ -3,6 +3,8 @@ var MenuGeneral = /** @class */ (function () {
         var _this = this;
         this.selectAccess = document.querySelector('#fpe-menuGeneral div[data-update=frontendPostEditor_user_access] select');
         this.selectAccess.addEventListener('change', function (e) { return _this.selectAccessChange(e); });
+        this.radioTrust = document.querySelectorAll('#fpe-menuGeneral div[data-update=frontendPostEditor_trust_policy] input');
+        [].forEach.call(this.radioTrust, function (redio) { return redio.addEventListener('click', function (e) { return _this.radioTrustClick(e); }); });
         var arr = document.querySelectorAll('#fpe-menuGeneral div[data-update]');
         this.divArr = [].map.call(arr, function (div) {
             var btn = div.querySelector('button');
@@ -21,6 +23,9 @@ var MenuGeneral = /** @class */ (function () {
             name: this.selectAccess.getAttribute('data-update'),
             data: this.selectAccess.value
         });
+    };
+    MenuGeneral.prototype.radioTrustClick = function (e) {
+        this.ajaxUpdate({ name: 'frontendPostEditor_trust_policy', data: e.target.value });
     };
     MenuGeneral.prototype.btnUpdateClick = function (e) {
         var _this = this;

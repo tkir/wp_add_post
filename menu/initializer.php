@@ -66,48 +66,20 @@ class FPE_Menu_Initializer {
 		}
 
 		$req = $_POST['body'];
-		if ( $req['name'] == 'frontendPostEditor_slug' ) {
-			$req['data'] = str_replace( array(
-				'~',
-				'`',
-				'!',
-				'@',
-				'#',
-				'$',
-				'%',
-				'^',
-				'&',
-				'*',
-				'(',
-				')',
-				'=',
-				'+',
-				'[',
-				']',
-				'{',
-				'}',
-				':',
-				';',
-				'"',
-				"'",
-				'|',
-				'<',
-				'>',
-				',',
-				'.',
-				'?',
-				'/',
-				' ',
-				'\/'
-			), '', $req['data'] );
-			$req['data'] = esc_sql( $req['data'] );
-			wp_update_post( array(
-				'ID'        => get_option( 'frontendPostEditor_id' ),
-				'post_name' => $req['data'],
-			) );
-		}
-		update_option( esc_sql( $req['name'] ), esc_sql( $req['data'] ) );
 
+//		только если опция изменена
+		if ( get_option( $req['name'] ) != $req['data'] ) {
+
+			if ( $req['name'] == 'frontendPostEditor_slug' ) {
+				$this->slugChanged($req['data']);
+			}
+
+			if ( $req['name'] == 'frontendPostEditor_trust_policy' ) {
+				$this->trustPolicyChanged( $req['data'] );
+			}
+
+			update_option( esc_sql( $req['name'] ), esc_sql( $req['data'] ) );
+		}
 		$response       = new stdClass();
 		$response->name = $req['name'];
 		$response->data = get_option( $req['name'] );
@@ -126,11 +98,75 @@ class FPE_Menu_Initializer {
 		}
 
 		$req = $_POST['body'];
-		if ( isset($req['userId']) && isset($req['userTrust']) ) {
+		if ( isset( $req['userId'] ) && isset( $req['userTrust'] ) ) {
 			update_user_meta( $req['userId'], 'fpeUserTrust', $req['userTrust'] );
 		}
 
 		wp_die();
+	}
+
+	private function slugChanged($newSlug){
+		$newSlug = str_replace( array(
+			'~',
+			'`',
+			'!',
+			'@',
+			'#',
+			'$',
+			'%',
+			'^',
+			'&',
+			'*',
+			'(',
+			')',
+			'=',
+			'+',
+			'[',
+			']',
+			'{',
+			'}',
+			':',
+			';',
+			'"',
+			"'",
+			'|',
+			'<',
+			'>',
+			',',
+			'.',
+			'?',
+			'/',
+			' ',
+			'\/'
+		), '', $newSlug );
+		$newSlug = esc_sql( $newSlug );
+		wp_update_post( array(
+			'ID'        => get_option( 'frontendPostEditor_id' ),
+			'post_name' => $newSlug,
+		) );
+	}
+
+	private function trustPolicyChanged( $newPolicy ) {
+		$oldPolicy = get_option( 'frontendPostEditor_trust_policy' );
+
+		if($oldPolicy=='trust_all' && $newPolicy=='after_first'){
+
+		}
+		else if($oldPolicy=='trust_all' && $newPolicy=='trust_never'){
+
+		}
+		else if($oldPolicy=='after_first' && $newPolicy=='trust_all'){
+
+		}
+		else if($oldPolicy=='after_first' && $newPolicy=='trust_never'){
+
+		}
+		else if($oldPolicy=='trust_never' && $newPolicy=='trust_all'){
+
+		}
+		else if($oldPolicy=='trust_never' && $newPolicy=='after_first'){
+
+		}
 	}
 
 	public function addUserColumn( $columns ) {
@@ -159,6 +195,7 @@ class FPE_Menu_Initializer {
 		}
 
 		update_user_meta( $post->post_author, 'fpeUserTrust', true );
+
 		return $new_status;
 	}
 }

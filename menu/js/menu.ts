@@ -4,10 +4,14 @@ declare const jQuery: any;
 class MenuGeneral {
     private divArr: [{ name: string, input: HTMLInputElement, button: HTMLButtonElement }];
     private selectAccess: HTMLSelectElement;
+    private radioTrust: any;
 
     constructor() {
         this.selectAccess = document.querySelector('#fpe-menuGeneral div[data-update=frontendPostEditor_user_access] select');
         this.selectAccess.addEventListener('change', (e) => this.selectAccessChange(e));
+
+        this.radioTrust = document.querySelectorAll('#fpe-menuGeneral div[data-update=frontendPostEditor_trust_policy] input');
+        [].forEach.call(this.radioTrust, (redio) => redio.addEventListener('click', (e) => this.radioTrustClick(e)));
 
         let arr = document.querySelectorAll('#fpe-menuGeneral div[data-update]');
         this.divArr = [].map.call(arr, (div) => {
@@ -28,6 +32,10 @@ class MenuGeneral {
             name: this.selectAccess.getAttribute('data-update'),
             data: this.selectAccess.value
         });
+    }
+
+    public radioTrustClick(e) {
+        this.ajaxUpdate({name:'frontendPostEditor_trust_policy', data:e.target.value});
     }
 
     public btnUpdateClick(e) {
