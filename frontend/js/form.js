@@ -22,8 +22,7 @@ var FPE_Form = /** @class */ (function () {
         this.formStr = $('#fpeForm').serialize();
         if (typeof fpe_post !== 'undefined')
             setTimeout(function () { return _this.setPost(); }, 1000);
-        // setInterval(() => this.autosave(), fpeConfig['asInterval']);
-        setTimeout(function () { return _this.autosave(); }, fpeConfig['asInterval']);
+        setInterval(function () { return _this.autosave(); }, fpeConfig['asInterval']);
     }
     FPE_Form.prototype.getTags = function () {
         return this.tags;
