@@ -48,8 +48,7 @@ class FPE_Form {
         this.formStr = $('#fpeForm').serialize();
 
         if (typeof fpe_post !== 'undefined') setTimeout(() => this.setPost(), 1000);
-        // setInterval(() => this.autosave(), fpeConfig['asInterval']);
-        setTimeout(() => this.autosave(), fpeConfig['asInterval']);
+        setInterval(() => this.autosave(), fpeConfig['asInterval']);
     }
 
     addTagClick() {
