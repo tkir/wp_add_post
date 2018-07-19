@@ -74,10 +74,11 @@ class FPE_Initializer {
 		update_option( 'frontendPostEditor_title_edit', 'Edit post' );
 		update_option( 'frontendPostEditor_title_create', 'Create post' );
 		update_option( 'frontendPostEditor_slug', 'frontendPostEditor' );
+		update_option( 'frontendPostEditor_autosave_interval', 15 );
 
 //		policy
 		update_option( 'frontendPostEditor_user_access', 'publish_posts' );
-		update_option('frontendPostEditor_trust_policy', 'after_first');
+		update_option( 'frontendPostEditor_trust_policy', 'after_first' );
 
 //		Medium editor MultiPlaceholders
 		update_option( 'frontendPostEditor_tag_title', 'h1' );
@@ -87,11 +88,24 @@ class FPE_Initializer {
 	}
 
 	private function addActions() {
+		add_action('init', array($this, 'registerPostStatus'));
 		add_shortcode( 'frontendPostEditor', array( $this, 'pageContent' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script' ) );
+
 		add_action( 'wp_ajax_tag_autofill', array( $this, 'ajaxTagAutofill' ) );
+		add_action( 'wp_ajax_del_autosave', array( $this, 'ajaxDelAutosave' ) );
+
 		add_filter( 'get_edit_post_link', array( $this, 'changeEditPostLink' ), 10, 3 );
 		add_filter( 'the_title', array( $this, 'changeTitle' ), 10, 2 );
+	}
+
+	public function registerPostStatus(){
+		register_post_status( 'autosave', array(
+			'public'                    => false,
+			'exclude_from_search'       => true,
+			'show_in_admin_all_list'    => false,
+			'show_in_admin_status_list' => false
+		) );
 	}
 
 	public function enqueue_script() {
@@ -131,12 +145,15 @@ class FPE_Initializer {
 		return array(
 			'ajaxPath'      => admin_url( 'admin-ajax.php' ),
 			'nonce'         => wp_create_nonce( 'wp_ajax' ),
+			'asInterval'    => intval( get_option( 'frontendPostEditor_autosave_interval' ) ) * 1000,
 			'tagTitle'      => get_option( 'frontendPostEditor_tag_title' ),
 			'phTitle'       => get_option( 'frontendPostEditor_placeholder_title' ),
 			'tagBody'       => get_option( 'frontendPostEditor_tag_body' ),
 			'phBody'        => get_option( 'frontendPostEditor_placeholder_body' ),
 			'fpe_tag_title' => get_option( 'frontendPostEditor_tag_title' ),
-			'fpe_ph_title'  => get_option( 'frontendPostEditor_placeholder_title' )
+			'fpe_ph_title'  => get_option( 'frontendPostEditor_placeholder_title' ),
+			'tag_body'      => get_option( 'frontendPostEditor_tag_body' ),
+			'ph_body'       => get_option( 'frontendPostEditor_placeholder_body' )
 		);
 	}
 
@@ -158,6 +175,32 @@ SELECT name FROM `wp_terms`
 		header( "Content-Type: application/json" );
 		echo json_encode( $tags );
 
+		wp_die();
+	}
+
+	public function ajaxDelAutosave() {
+		$nonce = $_POST['nonce'];
+		if ( ! wp_verify_nonce( $nonce, 'wp_ajax' ) ) {
+			die ( 'Busted!' );
+		}
+
+		header( "Content-Type: application/json" );
+
+		$id   = esc_sql( $_POST['id'] );
+		$post = get_posts(
+			array(
+				'post_status' => 'autosave',
+				'post_author' => get_current_user_id(),
+				'post_parent' => $id ? $id : 0,
+			) );
+		if ( empty( $post ) ) {
+			echo json_encode( array( 'error' => 'no post autosave' ) );
+			wp_die();
+		}
+
+		wp_delete_post( $post[0]->ID, true );
+
+		echo json_encode( array( 'result' => 'complete' ) );
 		wp_die();
 	}
 
@@ -197,10 +240,11 @@ SELECT name FROM `wp_terms`
 		delete_option( 'frontendPostEditor_title_edit' );
 		delete_option( 'frontendPostEditor_title_create' );
 		delete_option( 'frontendPostEditor_slug' );
+		delete_option( 'frontendPostEditor_autosave_interval' );
 
 //		policy
 		delete_option( 'frontendPostEditor_user_access' );
-		delete_option('frontendPostEditor_trust_policy');
+		delete_option( 'frontendPostEditor_trust_policy' );
 
 //		Medium editor MultiPlaceholders
 		delete_option( 'frontendPostEditor_tag_title' );

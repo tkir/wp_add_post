@@ -146,6 +146,7 @@ class FPE_Menu_Initializer {
 		) );
 	}
 
+//	TODO продумать изменения политики безопасности
 	private function trustPolicyChanged( $newPolicy ) {
 		$oldPolicy = get_option( 'frontendPostEditor_trust_policy' );
 

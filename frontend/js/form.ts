@@ -3,6 +3,10 @@ declare const $: any;
 declare const editor: any;
 declare const fpe_post: any;
 
+interface Array<T> {
+    find(predicate: (value: T, index: number, obj: Array<T>) => boolean, thisArg?: any): T | undefined;
+}
+
 class FPE_Form {
     private form: HTMLFormElement;
     private div: Element;
@@ -15,6 +19,7 @@ class FPE_Form {
     private divThumbnail: HTMLDivElement;
 
     private tags = [];
+    private formStr: string;
 
     public getTags() {
         return this.tags;
@@ -33,13 +38,18 @@ class FPE_Form {
         this.btnPlus.addEventListener('click', () => this.addTagClick());
         this.input.addEventListener('input', () => this.inputInput());
         this.input.addEventListener('keydown', (e) => this.inputKeyDown(<KeyboardEvent>e));
-        this.ul.addEventListener('click', (e) => this.removeTag(e));
+        this.ul.addEventListener('click', (e) => this.removeTagClick(e));
         this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', () => this.submitClick());
         this.form.querySelector('[data-btn=btnCancel]').addEventListener('click', () => this.cancelClick());
         this.form.querySelector('[data-btn=btnDraft]').addEventListener('click', () => this.draftClick());
+        this.form.querySelector('[data-btn=btnClear]').addEventListener('click', () => this.clearClick());
         this.divThumbnail.querySelector('input[type=file]').addEventListener('change', (e) => this.thumbnailLoaded(e));
 
+        this.formStr = $('#fpeForm').serialize();
+
         if (typeof fpe_post !== 'undefined') setTimeout(() => this.setPost(), 1000);
+        // setInterval(() => this.autosave(), fpeConfig['asInterval']);
+        setTimeout(() => this.autosave(), fpeConfig['asInterval']);
     }
 
     addTagClick() {
@@ -72,7 +82,7 @@ class FPE_Form {
         let val = this.input.value.trim();
         this.removeTagsBtns();
 
-        if (val.length > 2) {
+        if (val.length > 1) {
 
             $.ajax({
                 type: "POST",
@@ -105,19 +115,16 @@ class FPE_Form {
         }
     }
 
-    removeTag(e: Event) {
+    removeTagClick(e: Event) {
         if (!this.tags.length) return;
 
         let tag: string = (<HTMLElement>e.target).innerText;
-        this.tags.splice(this.tags.indexOf(tag), 1);
+        this.removeTag(tag);
+    }
 
-        let target = <HTMLElement>e.target;
-        while (target != document.body) {
-            let t = target;
-            target = target.parentElement;
-            if (target == this.ul)
-                this.ul.removeChild(t);
-        }
+    private removeTag(tag: string) {
+        this.tags.splice(this.tags.indexOf(tag), 1);
+        this.ul.removeChild([].find.call(this.ul.children, (li) => li.innerText == tag));
     }
 
 //добавляем кнопки тегов
@@ -158,22 +165,49 @@ class FPE_Form {
     //form submit
     submitClick() {
         this.form.querySelector('input[name=post-status]').setAttribute('value', 'pending');
-        this.formSubmit();
+        if (this.setHiddenInput()) {
+            this.form.submit();
+            this.deleteAutosave();
+        }
     }
 
     cancelClick() {
+        this.deleteAutosave();
         window.history.back();
     }
 
     draftClick() {
         this.form.querySelector('input[name=post-status]').setAttribute('value', 'draft');
-        this.formSubmit();
+        if (this.setHiddenInput()) {
+            this.form.submit();
+            this.deleteAutosave();
+        }
+    }
+
+    clearClick() {
+        editor.setContent(`
+        <${fpeConfig['fpe_tag_title']} data-placeholder="${fpeConfig['fpe_ph_title']}" class="medium-editor-placeholder"><br></${fpeConfig['fpe_tag_title']}>        
+        <${fpeConfig['tag_body']} data-placeholder="${fpeConfig['ph_body']}" class="medium-editor-placeholder"><br></${fpeConfig['tag_body']}>
+        `);
+
+        this.divThumbnail.querySelector('img').src = '';
+
+        let tplTagsArr: string[] = JSON.parse(JSON.stringify(this.tags));
+        tplTagsArr.forEach(tag => this.removeTag(tag));
+
+        //reset category selection
+        let catOptions = this.form.querySelector('select[name=post-category]').children;
+        [].forEach.call(catOptions, (opt) => opt.removeAttribute('selected'));
+
+        this.form.reset();
+
+        this.deleteAutosave();
     }
 
     //Редактирование поста
     private setPost() {
         editor.setContent(`
-        <${fpeConfig['fpe_tag_title']} data-placeholder="${fpeConfig['fpe_ph_title']}">${fpe_post['post_name']}</h1>
+        <${fpeConfig['fpe_tag_title']} data-placeholder="${fpeConfig['fpe_ph_title']}">${fpe_post['post_name']}</${fpeConfig['fpe_tag_title']}>
         ${fpe_post['post_content']}
         `);
 
@@ -181,7 +215,7 @@ class FPE_Form {
         if (fpe_post['post-thumb']) this.divThumbnail.querySelector('img').src = fpe_post['post-thumb'];
     }
 
-    private formSubmit() {
+    private setHiddenInput() {
         let el = document.createElement("DIV");
         el.innerHTML = editor.getContent();
         let title = <HTMLElement>el.querySelector('h1[data-placeholder]');
@@ -191,16 +225,65 @@ class FPE_Form {
         if (divBtns) el.removeChild(divBtns);
 
         this.form.querySelector('input[name=post-title]').setAttribute('value', title.innerText.trim());
-        this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
+        this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML.trim());
         this.form.querySelector('input[name=post-tags]').setAttribute('value', this.tags.join(','));
 
         if (typeof fpe_post !== 'undefined') {
             this.form.querySelector('input[name=post-id').setAttribute('value', fpe_post['ID']);
         }
 
-        if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
-            this.form.submit();
-        else return false;
+        return title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null);
+    }
+
+    public autosave() {
+        if (this.setHiddenInput()) {
+            this.form.querySelector('input[name=post-status]').setAttribute('value', 'autosave');
+            if (typeof fpe_post !== 'undefined')
+                this.form.querySelector('input[name=post-parent').setAttribute('value', fpe_post['ID']);
+
+
+            if (this.formStr !== $('#fpeForm').serialize()) {
+                this.formStr = $('#fpeForm').serialize();
+
+                let formData = new FormData(this.form);
+                console.log('auto');
+                $.ajax({
+                    type: "POST",
+                    url: this.form.getAttribute('action'),
+                    data: formData,
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    success: (data) => {
+                        console.log(data);
+                    },
+                    error: (error) => {
+                        console.error(error.statusText);
+                    }
+                });
+            }
+
+        }
+
+    }
+
+    private deleteAutosave() {
+        $.ajax({
+            type: "POST",
+            url: fpeConfig['ajaxPath'],
+            data: {
+                action: 'del_autosave',
+                nonce: fpeConfig['nonce'],
+                id: (typeof fpe_post !== 'undefined') ? fpe_post['ID'] : ''
+            },
+            success: (result) => {
+                console.log(result);
+            },
+            error: (error) => {
+                console.error(error.statusText);
+            }
+
+        });
     }
 }
 

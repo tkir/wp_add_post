@@ -12,24 +12,55 @@ if (
 	&& wp_verify_nonce( $_POST['add_post_nonce'], 'add_post_action' )
 	&& current_user_can( 'publish_posts' )
 ) {
-	$author_id     = ( $_POST['post-id'] ) ? get_post_field( 'post_author', $_POST['post-id'] ) : get_current_user_id();
+	$author_id     = isset( $_POST['post-id'] ) ? get_post_field( 'post_author', $_POST['post-id'] ) : get_current_user_id();
 	$post_title    = $_POST['post-title'];
+	$post_id       = isset( $_POST['post-id'] ) ? $_POST['post-id'] : '';
 	$post_content  = $_POST['post-data'];
 	$post_category = $_POST['post-category'];
 	$post_tags     = $_POST['post-tags'];
-	$post_status   = $_POST['post-status'] == 'draft' ? 'draft' :
-		get_user_meta( $author_id, 'fpeUserTrust', true ) ? 'publish' : 'pending';
+	$post_status   = getPostStatus( $author_id );
+	$post_parent   = isset( $_POST['[post-parent'] ) ? $_POST['post-parent'] : 0;
 
 	$postData = array(
-		'ID'            => isset( $_POST['post-id'] ) ? $_POST['post-id'] : '',
+		'ID'            => $post_id,
 		'post_author'   => $author_id,
 		'post_content'  => $post_content,
 		'post_title'    => $post_title,
 		'post_category' => array( $post_category ),
-		'post_status'   => $post_status,         //'draft' | 'publish' | 'pending'| 'future' | 'private'
-		'tags_input'    => $post_tags
+		'post_status'   => $post_status,
+		'tags_input'    => $post_tags,
+		'post_parent'   => $post_parent
 	);
 
+	$post_content = fpe_saveImagesFromPot( $post_content );
+
+	$post_id = ( is_null( get_post( $post_id ) ) ) ?
+		wp_insert_post( $postData ) : wp_update_post( $postData );
+
+//	check thumbnamil
+	if ( isset( $_FILES['post-thumbnail'] ) && $_FILES['post-thumbnail']['size'] ) {
+		$thumbId = media_handle_upload( 'post-thumbnail', $post_id );
+		set_post_thumbnail( $post_id, $thumbId );
+	}
+
+//	if autosave - die
+	if ( $post_status == 'autosave' ) {
+		echo json_encode( array( 'result' => get_post( $post_id ) ) );
+		die();
+	}
+
+	$post = get_post( $post_id );
+	wp_redirect( $post->guid );
+}
+
+/**
+ * Check is images in post content? Save images, update post content
+ *
+ * @param string $post_content
+ *
+ * @return string post_content
+ */
+function fpe_saveImagesFromPot( $post_content ) {
 	if ( preg_match_all( '/\\\\"data:image\/([^;]*);base64,([^\\\\]*)\\\\"/', $post_content, $matches ) ) {
 
 		$upload_dir  = wp_upload_dir();
@@ -44,13 +75,16 @@ if (
 		}
 	}
 
-	$post_id = ( $_POST['post-id'] ) ? wp_update_post( $postData ) : wp_insert_post( $postData );
+	return $post_content;
+}
 
-	if ( isset( $_FILES['post-thumbnail'] ) && $_FILES['post-thumbnail']['size'] ) {
-		$thumbId = media_handle_upload( 'post-thumbnail', $post_id );
-		set_post_thumbnail( $post_id, $thumbId );
+function getPostStatus( $author_id ) {
+	switch ( $_POST['post-status'] ) {
+		case 'draft':
+			return 'draft';
+		case 'autosave':
+			return 'autosave';
+		default:
+			return get_user_meta( $author_id, 'fpeUserTrust', true ) ? 'publish' : 'pending';
 	}
-
-	$post = get_post( $post_id );
-	wp_redirect( $post->guid );
 }

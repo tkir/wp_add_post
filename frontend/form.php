@@ -1,11 +1,31 @@
-<?php if(!current_user_can(get_option('frontendPostEditor_user_access'))):?>
-<script>window.history.back();</script>
-<?php endif;?>
+<?php if ( ! current_user_can( get_option( 'frontendPostEditor_user_access' ) ) ): ?>
+    <script>location.href = "<?= home_url(); ?>";</script>
+<?php endif; ?>
 
 <?php
-$id = false;
+
+
+$id = '';
+
+//check is editing post
 if ( isset( $_GET['id'] ) ) {
-	$id       = $_GET['id'];
+	$id = $_GET['id'];
+}
+
+//check is autosave
+$post_auto = get_posts( array(
+	'post_status'    => 'autosave',
+	'post_author'    => get_current_user_id(),
+	'post_parent'    => $id ? $id : 0,
+	'posts_per_page' => 1
+) );
+
+if ( ! empty( $post_auto ) ) {
+	$id = $post_auto[0]->ID;
+}
+
+//if post exists fill variable for js
+if ( $id ) {
 	$postData = get_post( $id, ARRAY_A );
 
 	if ( get_the_post_thumbnail_url( $id ) ) {
@@ -14,6 +34,8 @@ if ( isset( $_GET['id'] ) ) {
 
 	wp_localize_script( 'script_form', 'fpe_post', $postData );
 }
+
+
 ?>
 
 <form id="fpeForm"
@@ -28,6 +50,8 @@ if ( isset( $_GET['id'] ) ) {
     <input type="hidden" name="post-data">
     <input type="hidden" name="post-tags">
     <input type="hidden" name="post-status">
+    <input type="hidden" name="post-name">
+    <input type="hidden" name="post-parent">
 
     <label class="" for="post-category">Категория
 		<?php wp_dropdown_categories(
@@ -67,6 +91,7 @@ if ( isset( $_GET['id'] ) ) {
         </label>
     </div>
 
+    <button type="button" data-btn="btnClear">Clear</button>
     <button type="button" data-btn="btnCancel">Cancel</button>
     <button type="button" data-btn="btnDraft">Draft</button>
     <button type="button" data-btn="btnSubmit">Publish</button>

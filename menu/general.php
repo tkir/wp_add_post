@@ -94,4 +94,12 @@
                 All posts to pending except trusted</label>
         </span>
     </div>
+
+    <hr>
+    <div data-update="frontendPostEditor_autosave_interval">
+        <label> Autosave interval (seconds)
+            <input type="number" value="<?= get_option( 'frontendPostEditor_autosave_interval' ); ?>">
+        </label>
+        <button>Update</button>
+    </div>
 </div>

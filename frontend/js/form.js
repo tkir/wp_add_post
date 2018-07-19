@@ -13,13 +13,17 @@ var FPE_Form = /** @class */ (function () {
         this.btnPlus.addEventListener('click', function () { return _this.addTagClick(); });
         this.input.addEventListener('input', function () { return _this.inputInput(); });
         this.input.addEventListener('keydown', function (e) { return _this.inputKeyDown(e); });
-        this.ul.addEventListener('click', function (e) { return _this.removeTag(e); });
+        this.ul.addEventListener('click', function (e) { return _this.removeTagClick(e); });
         this.form.querySelector('[data-btn=btnSubmit]').addEventListener('click', function () { return _this.submitClick(); });
         this.form.querySelector('[data-btn=btnCancel]').addEventListener('click', function () { return _this.cancelClick(); });
         this.form.querySelector('[data-btn=btnDraft]').addEventListener('click', function () { return _this.draftClick(); });
+        this.form.querySelector('[data-btn=btnClear]').addEventListener('click', function () { return _this.clearClick(); });
         this.divThumbnail.querySelector('input[type=file]').addEventListener('change', function (e) { return _this.thumbnailLoaded(e); });
+        this.formStr = $('#fpeForm').serialize();
         if (typeof fpe_post !== 'undefined')
             setTimeout(function () { return _this.setPost(); }, 1000);
+        // setInterval(() => this.autosave(), fpeConfig['asInterval']);
+        setTimeout(function () { return _this.autosave(); }, fpeConfig['asInterval']);
     }
     FPE_Form.prototype.getTags = function () {
         return this.tags;
@@ -50,7 +54,7 @@ var FPE_Form = /** @class */ (function () {
         var _this = this;
         var val = this.input.value.trim();
         this.removeTagsBtns();
-        if (val.length > 2) {
+        if (val.length > 1) {
             $.ajax({
                 type: "POST",
                 url: fpeConfig['ajaxPath'],
@@ -79,18 +83,15 @@ var FPE_Form = /** @class */ (function () {
             this.ul.removeChild(this.ul.lastElementChild);
         }
     };
-    FPE_Form.prototype.removeTag = function (e) {
+    FPE_Form.prototype.removeTagClick = function (e) {
         if (!this.tags.length)
             return;
         var tag = e.target.innerText;
+        this.removeTag(tag);
+    };
+    FPE_Form.prototype.removeTag = function (tag) {
         this.tags.splice(this.tags.indexOf(tag), 1);
-        var target = e.target;
-        while (target != document.body) {
-            var t = target;
-            target = target.parentElement;
-            if (target == this.ul)
-                this.ul.removeChild(t);
-        }
+        this.ul.removeChild([].find.call(this.ul.children, function (li) { return li.innerText == tag; }));
     };
     //добавляем кнопки тегов
     FPE_Form.prototype.setDivAutocomplete = function (tagsAutocomplete) {
@@ -129,24 +130,43 @@ var FPE_Form = /** @class */ (function () {
     //form submit
     FPE_Form.prototype.submitClick = function () {
         this.form.querySelector('input[name=post-status]').setAttribute('value', 'pending');
-        this.formSubmit();
+        if (this.setHiddenInput()) {
+            this.form.submit();
+            this.deleteAutosave();
+        }
     };
     FPE_Form.prototype.cancelClick = function () {
+        this.deleteAutosave();
         window.history.back();
     };
     FPE_Form.prototype.draftClick = function () {
         this.form.querySelector('input[name=post-status]').setAttribute('value', 'draft');
-        this.formSubmit();
+        if (this.setHiddenInput()) {
+            this.form.submit();
+            this.deleteAutosave();
+        }
+    };
+    FPE_Form.prototype.clearClick = function () {
+        var _this = this;
+        editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\" class=\"medium-editor-placeholder\"><br></" + fpeConfig['fpe_tag_title'] + ">        \n        <" + fpeConfig['tag_body'] + " data-placeholder=\"" + fpeConfig['ph_body'] + "\" class=\"medium-editor-placeholder\"><br></" + fpeConfig['tag_body'] + ">\n        ");
+        this.divThumbnail.querySelector('img').src = '';
+        var tplTagsArr = JSON.parse(JSON.stringify(this.tags));
+        tplTagsArr.forEach(function (tag) { return _this.removeTag(tag); });
+        //reset category selection
+        var catOptions = this.form.querySelector('select[name=post-category]').children;
+        [].forEach.call(catOptions, function (opt) { return opt.removeAttribute('selected'); });
+        this.form.reset();
+        this.deleteAutosave();
     };
     //Редактирование поста
     FPE_Form.prototype.setPost = function () {
-        editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\">" + fpe_post['post_name'] + "</h1>\n        " + fpe_post['post_content'] + "\n        ");
+        editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\">" + fpe_post['post_name'] + "</" + fpeConfig['fpe_tag_title'] + ">\n        " + fpe_post['post_content'] + "\n        ");
         if (fpe_post['tags_input'] != undefined && fpe_post['tags_input'] != '')
             this.addTag(fpe_post['tags_input'].join(','));
         if (fpe_post['post-thumb'])
             this.divThumbnail.querySelector('img').src = fpe_post['post-thumb'];
     };
-    FPE_Form.prototype.formSubmit = function () {
+    FPE_Form.prototype.setHiddenInput = function () {
         var el = document.createElement("DIV");
         el.innerHTML = editor.getContent();
         var title = el.querySelector('h1[data-placeholder]');
@@ -155,15 +175,55 @@ var FPE_Form = /** @class */ (function () {
         if (divBtns)
             el.removeChild(divBtns);
         this.form.querySelector('input[name=post-title]').setAttribute('value', title.innerText.trim());
-        this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML);
+        this.form.querySelector('input[name=post-data]').setAttribute('value', el.innerHTML.trim());
         this.form.querySelector('input[name=post-tags]').setAttribute('value', this.tags.join(','));
         if (typeof fpe_post !== 'undefined') {
             this.form.querySelector('input[name=post-id').setAttribute('value', fpe_post['ID']);
         }
-        if (title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null))
-            this.form.submit();
-        else
-            return false;
+        return title.innerText.trim() != '' && (el.innerText.trim() != '' || el.querySelector('img') != null);
+    };
+    FPE_Form.prototype.autosave = function () {
+        if (this.setHiddenInput()) {
+            this.form.querySelector('input[name=post-status]').setAttribute('value', 'autosave');
+            if (typeof fpe_post !== 'undefined')
+                this.form.querySelector('input[name=post-parent').setAttribute('value', fpe_post['ID']);
+            if (this.formStr !== $('#fpeForm').serialize()) {
+                this.formStr = $('#fpeForm').serialize();
+                var formData = new FormData(this.form);
+                console.log('auto');
+                $.ajax({
+                    type: "POST",
+                    url: this.form.getAttribute('action'),
+                    data: formData,
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    success: function (data) {
+                        console.log(data);
+                    },
+                    error: function (error) {
+                        console.error(error.statusText);
+                    }
+                });
+            }
+        }
+    };
+    FPE_Form.prototype.deleteAutosave = function () {
+        $.ajax({
+            type: "POST",
+            url: fpeConfig['ajaxPath'],
+            data: {
+                action: 'del_autosave',
+                nonce: fpeConfig['nonce'],
+                id: (typeof fpe_post !== 'undefined') ? fpe_post['ID'] : ''
+            },
+            success: function (result) {
+                console.log(result);
+            },
+            error: function (error) {
+                console.error(error.statusText);
+            }
+        });
     };
     return FPE_Form;
 }());
