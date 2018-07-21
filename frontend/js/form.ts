@@ -251,9 +251,9 @@ class FPE_Form {
     }
 
     //Редактирование поста
-    private setPost() {
+    private setPost() {console.log(fpe_post);
         this.editor.setContent(`
-        <${fpeConfig['fpe_tag_title']} data-placeholder="${fpeConfig['fpe_ph_title']}">${fpe_post['post_name']}</${fpeConfig['fpe_tag_title']}>
+        <${fpeConfig['fpe_tag_title']} data-placeholder="${fpeConfig['fpe_ph_title']}">${fpe_post['post_title']}</${fpeConfig['fpe_tag_title']}>
         ${fpe_post['post_content']}
         `);
 

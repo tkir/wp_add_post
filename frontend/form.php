@@ -27,7 +27,7 @@ if ( ! empty( $post_auto ) ) {
 
 //if post exists fill variable for js
 if ( $id ) {
-	$postData = get_post( $id, ARRAY_A );
+	$postData = get_post( $id, ARRAY_A , 'raw');
 
 	if ( get_the_post_thumbnail_url( $id ) ) {
 		$postData['post-thumb'] = get_the_post_thumbnail_url( $id );
@@ -51,7 +51,6 @@ if ( $id ) {
     <input type="hidden" name="post-data">
     <input type="hidden" name="post-tags">
     <input type="hidden" name="post-status">
-    <input type="hidden" name="post-name">
     <input type="hidden" name="post-parent">
 
     <label class="" for="post-category">Категория

@@ -204,7 +204,8 @@ var FPE_Form = /** @class */ (function () {
     };
     //Редактирование поста
     FPE_Form.prototype.setPost = function () {
-        this.editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\">" + fpe_post['post_name'] + "</" + fpeConfig['fpe_tag_title'] + ">\n        " + fpe_post['post_content'] + "\n        ");
+        console.log(fpe_post);
+        this.editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\">" + fpe_post['post_title'] + "</" + fpeConfig['fpe_tag_title'] + ">\n        " + fpe_post['post_content'] + "\n        ");
         if (fpe_post['tags_input'] != undefined && fpe_post['tags_input'] != '')
             this.addTag(fpe_post['tags_input'].join(','));
         if (fpe_post['post-thumb'])
