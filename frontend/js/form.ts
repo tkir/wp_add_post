@@ -1,7 +1,8 @@
 declare const fpeConfig: any;
 declare const $: any;
-declare const editor: any;
-declare const fpe_post: any;
+declare var fpe_post: any;
+declare const MediumEditor: any;
+declare const MediumEditorMultiPlaceholders: any;
 
 interface Array<T> {
     find(predicate: (value: T, index: number, obj: Array<T>) => boolean, thisArg?: any): T | undefined;
@@ -9,7 +10,9 @@ interface Array<T> {
 
 class FPE_Form {
     private form: HTMLFormElement;
-    private div: Element;
+    private editor: any;
+    private divEditorWrapper: HTMLTemplateElement;
+    private divTags: Element;
     private ul: Element;
     private liTpl: HTMLElement;
     private btnTpl: HTMLTemplateElement;
@@ -27,12 +30,13 @@ class FPE_Form {
 
     constructor() {
         this.form = document.querySelector('#fpeForm ');
-        this.div = this.form.querySelector('div[data-tags]');
-        this.ul = this.div.querySelector('ul');
-        this.input = <HTMLInputElement>this.div.querySelector('input[type=text]');
-        this.btnPlus = <HTMLButtonElement>this.div.querySelector('[data-btn=btnPlus]');
-        this.divAutocomplete = <HTMLDivElement>this.div.querySelector('div[data-autocomplete]');
-        this.btnTpl = <HTMLTemplateElement>(<any>this.div.querySelector('template[data-template=btnAutocomplete]'));
+        this.divEditorWrapper = this.form.querySelector('[data-editor-wrapper]');
+        this.divTags = this.form.querySelector('div[data-tags]');
+        this.ul = this.divTags.querySelector('ul');
+        this.input = <HTMLInputElement>this.divTags.querySelector('input[type=text]');
+        this.btnPlus = <HTMLButtonElement>this.divTags.querySelector('[data-btn=btnPlus]');
+        this.divAutocomplete = <HTMLDivElement>this.divTags.querySelector('div[data-autocomplete]');
+        this.btnTpl = <HTMLTemplateElement>(<any>this.divTags.querySelector('template[data-template=btnAutocomplete]'));
         this.divThumbnail = <HTMLDivElement>this.form.querySelector('div[data-thumbnail]');
 
         this.btnPlus.addEventListener('click', () => this.addTagClick());
@@ -47,8 +51,55 @@ class FPE_Form {
 
         this.formStr = $('#fpeForm').serialize();
 
-        if (typeof fpe_post !== 'undefined') setTimeout(() => this.setPost(), 1000);
+        this.checkMediumEditor((err, res) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            this.mediumEditorInit();
+            if (typeof fpe_post !== 'undefined') this.setPost();
+        });
+
         setInterval(() => this.autosave(), fpeConfig['asInterval']);
+    }
+
+    checkMediumEditor(cb) {
+        if (typeof MediumEditor === 'undefined') {
+            setTimeout(() => this.checkMediumEditor(cb), 300);
+            return;
+        }
+        cb(null, true);
+    }
+
+    mediumEditorInit() {
+        let oldEditor = this.form.querySelector('[data-editor-wrapper] > div');
+        if (oldEditor) this.divEditorWrapper.removeChild(oldEditor);
+
+        let divEditor = this.divEditorWrapper.querySelector('template').content.cloneNode(true);
+        this.divEditorWrapper.appendChild(divEditor);
+
+        this.editor = new MediumEditor('#fpeForm [data-editor]', {
+            placeholder: false,
+            extensions: {
+                'multi_placeholder': new MediumEditorMultiPlaceholders({
+                    placeholders: [
+                        {
+                            tag: fpeConfig['tagTitle'],
+                            text: fpeConfig['phTitle']
+                        },
+                        {
+                            tag: fpeConfig['tagBody'],
+                            text: fpeConfig['phBody']
+                        }
+                    ]
+                })
+            }
+        });
+        $(function () {
+            $('#fpeForm [data-editor]').mediumInsert({
+                editor: this.editor
+            });
+        });
     }
 
     addTagClick() {
@@ -66,7 +117,7 @@ class FPE_Form {
         tagArr.forEach(tag => {
             tag = tag.trim();
             if (!this.tags.some(t => t == tag)) {
-                this.liTpl = <HTMLElement>(<HTMLTemplateElement>this.div.querySelector('template[data-template=liTag]'))
+                this.liTpl = <HTMLElement>(<HTMLTemplateElement>this.divTags.querySelector('template[data-template=liTag]'))
                     .content.cloneNode(true);
                 this.liTpl.querySelector('span').innerText = tag;
                 this.ul.appendChild(this.liTpl);
@@ -184,11 +235,7 @@ class FPE_Form {
     }
 
     clearClick() {
-        editor.setContent(`
-        <${fpeConfig['fpe_tag_title']} data-placeholder="${fpeConfig['fpe_ph_title']}" class="medium-editor-placeholder"><br></${fpeConfig['fpe_tag_title']}>        
-        <${fpeConfig['tag_body']} data-placeholder="${fpeConfig['ph_body']}" class="medium-editor-placeholder"><br></${fpeConfig['tag_body']}>
-        `);
-
+        this.mediumEditorInit();
         this.divThumbnail.querySelector('img').src = '';
 
         let tplTagsArr: string[] = JSON.parse(JSON.stringify(this.tags));
@@ -205,7 +252,7 @@ class FPE_Form {
 
     //Редактирование поста
     private setPost() {
-        editor.setContent(`
+        this.editor.setContent(`
         <${fpeConfig['fpe_tag_title']} data-placeholder="${fpeConfig['fpe_ph_title']}">${fpe_post['post_name']}</${fpeConfig['fpe_tag_title']}>
         ${fpe_post['post_content']}
         `);
@@ -216,7 +263,7 @@ class FPE_Form {
 
     private setHiddenInput() {
         let el = document.createElement("DIV");
-        el.innerHTML = editor.getContent();
+        el.innerHTML = this.editor.getContent();
         let title = <HTMLElement>el.querySelector('h1[data-placeholder]');
         el.removeChild(title);
 
@@ -237,9 +284,11 @@ class FPE_Form {
     public autosave() {
         if (this.setHiddenInput()) {
             this.form.querySelector('input[name=post-status]').setAttribute('value', 'autosave');
-            if (typeof fpe_post !== 'undefined')
-                this.form.querySelector('input[name=post-parent').setAttribute('value', fpe_post['ID']);
 
+            if (typeof fpe_post !== 'undefined' && fpe_post['post_status'] != 'autosave') {
+                this.form.querySelector('input[name=post-parent').setAttribute('value', fpe_post['ID']);
+                this.form.querySelector('input[name=post-id').setAttribute('value', '');
+            }
 
             if (this.formStr !== $('#fpeForm').serialize()) {
                 this.formStr = $('#fpeForm').serialize();
@@ -253,8 +302,9 @@ class FPE_Form {
                     contentType: false,
                     cache: false,
                     processData: false,
-                    success: (data) => {
-                        console.log(data);
+                    success: (res) => {
+                        fpe_post = JSON.parse(res)['result'];
+                        console.log(fpe_post['ID']);
                     },
                     error: (error) => {
                         console.error(error.statusText);

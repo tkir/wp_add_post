@@ -3,12 +3,13 @@ var FPE_Form = /** @class */ (function () {
         var _this = this;
         this.tags = [];
         this.form = document.querySelector('#fpeForm ');
-        this.div = this.form.querySelector('div[data-tags]');
-        this.ul = this.div.querySelector('ul');
-        this.input = this.div.querySelector('input[type=text]');
-        this.btnPlus = this.div.querySelector('[data-btn=btnPlus]');
-        this.divAutocomplete = this.div.querySelector('div[data-autocomplete]');
-        this.btnTpl = this.div.querySelector('template[data-template=btnAutocomplete]');
+        this.divEditorWrapper = this.form.querySelector('[data-editor-wrapper]');
+        this.divTags = this.form.querySelector('div[data-tags]');
+        this.ul = this.divTags.querySelector('ul');
+        this.input = this.divTags.querySelector('input[type=text]');
+        this.btnPlus = this.divTags.querySelector('[data-btn=btnPlus]');
+        this.divAutocomplete = this.divTags.querySelector('div[data-autocomplete]');
+        this.btnTpl = this.divTags.querySelector('template[data-template=btnAutocomplete]');
         this.divThumbnail = this.form.querySelector('div[data-thumbnail]');
         this.btnPlus.addEventListener('click', function () { return _this.addTagClick(); });
         this.input.addEventListener('input', function () { return _this.inputInput(); });
@@ -20,12 +21,56 @@ var FPE_Form = /** @class */ (function () {
         this.form.querySelector('[data-btn=btnClear]').addEventListener('click', function () { return _this.clearClick(); });
         this.divThumbnail.querySelector('input[type=file]').addEventListener('change', function (e) { return _this.thumbnailLoaded(e); });
         this.formStr = $('#fpeForm').serialize();
-        if (typeof fpe_post !== 'undefined')
-            setTimeout(function () { return _this.setPost(); }, 1000);
+        this.checkMediumEditor(function (err, res) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            _this.mediumEditorInit();
+            if (typeof fpe_post !== 'undefined')
+                _this.setPost();
+        });
         setInterval(function () { return _this.autosave(); }, fpeConfig['asInterval']);
     }
     FPE_Form.prototype.getTags = function () {
         return this.tags;
+    };
+    FPE_Form.prototype.checkMediumEditor = function (cb) {
+        var _this = this;
+        if (typeof MediumEditor === 'undefined') {
+            setTimeout(function () { return _this.checkMediumEditor(cb); }, 300);
+            return;
+        }
+        cb(null, true);
+    };
+    FPE_Form.prototype.mediumEditorInit = function () {
+        var oldEditor = this.form.querySelector('[data-editor-wrapper] > div');
+        if (oldEditor)
+            this.divEditorWrapper.removeChild(oldEditor);
+        var divEditor = this.divEditorWrapper.querySelector('template').content.cloneNode(true);
+        this.divEditorWrapper.appendChild(divEditor);
+        this.editor = new MediumEditor('#fpeForm [data-editor]', {
+            placeholder: false,
+            extensions: {
+                'multi_placeholder': new MediumEditorMultiPlaceholders({
+                    placeholders: [
+                        {
+                            tag: fpeConfig['tagTitle'],
+                            text: fpeConfig['phTitle']
+                        },
+                        {
+                            tag: fpeConfig['tagBody'],
+                            text: fpeConfig['phBody']
+                        }
+                    ]
+                })
+            }
+        });
+        $(function () {
+            $('#fpeForm [data-editor]').mediumInsert({
+                editor: this.editor
+            });
+        });
     };
     FPE_Form.prototype.addTagClick = function () {
         this.input.value = this.input.value.trim();
@@ -40,7 +85,7 @@ var FPE_Form = /** @class */ (function () {
         tagArr.forEach(function (tag) {
             tag = tag.trim();
             if (!_this.tags.some(function (t) { return t == tag; })) {
-                _this.liTpl = _this.div.querySelector('template[data-template=liTag]')
+                _this.liTpl = _this.divTags.querySelector('template[data-template=liTag]')
                     .content.cloneNode(true);
                 _this.liTpl.querySelector('span').innerText = tag;
                 _this.ul.appendChild(_this.liTpl);
@@ -147,7 +192,7 @@ var FPE_Form = /** @class */ (function () {
     };
     FPE_Form.prototype.clearClick = function () {
         var _this = this;
-        editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\" class=\"medium-editor-placeholder\"><br></" + fpeConfig['fpe_tag_title'] + ">        \n        <" + fpeConfig['tag_body'] + " data-placeholder=\"" + fpeConfig['ph_body'] + "\" class=\"medium-editor-placeholder\"><br></" + fpeConfig['tag_body'] + ">\n        ");
+        this.mediumEditorInit();
         this.divThumbnail.querySelector('img').src = '';
         var tplTagsArr = JSON.parse(JSON.stringify(this.tags));
         tplTagsArr.forEach(function (tag) { return _this.removeTag(tag); });
@@ -159,7 +204,7 @@ var FPE_Form = /** @class */ (function () {
     };
     //Редактирование поста
     FPE_Form.prototype.setPost = function () {
-        editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\">" + fpe_post['post_name'] + "</" + fpeConfig['fpe_tag_title'] + ">\n        " + fpe_post['post_content'] + "\n        ");
+        this.editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\">" + fpe_post['post_name'] + "</" + fpeConfig['fpe_tag_title'] + ">\n        " + fpe_post['post_content'] + "\n        ");
         if (fpe_post['tags_input'] != undefined && fpe_post['tags_input'] != '')
             this.addTag(fpe_post['tags_input'].join(','));
         if (fpe_post['post-thumb'])
@@ -167,7 +212,7 @@ var FPE_Form = /** @class */ (function () {
     };
     FPE_Form.prototype.setHiddenInput = function () {
         var el = document.createElement("DIV");
-        el.innerHTML = editor.getContent();
+        el.innerHTML = this.editor.getContent();
         var title = el.querySelector('h1[data-placeholder]');
         el.removeChild(title);
         var divBtns = el.querySelector('div.medium-insert-buttons');
@@ -184,8 +229,10 @@ var FPE_Form = /** @class */ (function () {
     FPE_Form.prototype.autosave = function () {
         if (this.setHiddenInput()) {
             this.form.querySelector('input[name=post-status]').setAttribute('value', 'autosave');
-            if (typeof fpe_post !== 'undefined')
+            if (typeof fpe_post !== 'undefined' && fpe_post['post_status'] != 'autosave') {
                 this.form.querySelector('input[name=post-parent').setAttribute('value', fpe_post['ID']);
+                this.form.querySelector('input[name=post-id').setAttribute('value', '');
+            }
             if (this.formStr !== $('#fpeForm').serialize()) {
                 this.formStr = $('#fpeForm').serialize();
                 var formData = new FormData(this.form);
@@ -197,8 +244,9 @@ var FPE_Form = /** @class */ (function () {
                     contentType: false,
                     cache: false,
                     processData: false,
-                    success: function (data) {
-                        console.log(data);
+                    success: function (res) {
+                        fpe_post = JSON.parse(res)['result'];
+                        console.log(fpe_post['ID']);
                     },
                     error: function (error) {
                         console.error(error.statusText);

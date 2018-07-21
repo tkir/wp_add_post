@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <?php if ( ! current_user_can( get_option( 'frontendPostEditor_user_access' ) ) ): ?>
     <script>location.href = "<?= home_url(); ?>";</script>
 <?php endif; ?>
@@ -65,7 +66,11 @@ if ( $id ) {
 		); ?>
     </label>
 
-    <div data-editor></div>
+    <div data-editor-wrapper>
+        <template>
+            <div data-editor></div>
+        </template>
+    </div>
 
     <div data-tags>
         <ul>

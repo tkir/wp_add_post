@@ -88,7 +88,7 @@ class FPE_Initializer {
 	}
 
 	private function addActions() {
-		add_action('init', array($this, 'registerPostStatus'));
+		add_action( 'init', array( $this, 'registerPostStatus' ) );
 		add_shortcode( 'frontendPostEditor', array( $this, 'pageContent' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script' ) );
 
@@ -99,7 +99,7 @@ class FPE_Initializer {
 		add_filter( 'the_title', array( $this, 'changeTitle' ), 10, 2 );
 	}
 
-	public function registerPostStatus(){
+	public function registerPostStatus() {
 		register_post_status( 'autosave', array(
 			'public'                    => false,
 			'exclude_from_search'       => true,
@@ -115,7 +115,6 @@ class FPE_Initializer {
 
 		wp_enqueue_style( 'style', plugin_dir_url( __FILE__ ) . 'css/style.css' );
 		wp_enqueue_script( 'script_form', plugin_dir_url( __FILE__ ) . 'js/form.js', false, false, true );
-		wp_enqueue_script( 'script_init', plugin_dir_url( __FILE__ ) . 'js/init.js', false, false, true );
 
 		wp_deregister_script( 'jquery' );
 		wp_register_script( 'jquery', ( 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js' ), false, null, false );
@@ -136,7 +135,6 @@ class FPE_Initializer {
 		wp_enqueue_script( 'medium-editor-insert-plugin-js', 'https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/js/medium-editor-insert-plugin.min.js', false, false, true );
 
 		wp_enqueue_script( 'Multiplaceholders', plugin_dir_url( __DIR__ ) . 'medium_editor/MultiPlaceholders/medium-editor-multi-placeholders-plugin.min.js', false, false, true );
-		wp_add_inline_script( 'Multiplaceholders', "mediumEditorInit();" );
 
 		wp_localize_script( 'script_form', 'fpeConfig', $this->jsConfig() );
 	}
@@ -186,12 +184,18 @@ SELECT name FROM `wp_terms`
 
 		header( "Content-Type: application/json" );
 
-		$id   = esc_sql( $_POST['id'] );
+		$id = esc_sql( $_POST['id'] );
+		file_put_contents( __DIR__ . '/test.txt', $id );
+		if ( ! $id ) {
+			echo json_encode( array( 'result' => 'no post' ) );
+			wp_die();
+		}
+
 		$post = get_posts(
 			array(
 				'post_status' => 'autosave',
 				'post_author' => get_current_user_id(),
-				'post_parent' => $id ? $id : 0,
+				'ID'          => $id,
 			) );
 		if ( empty( $post ) ) {
 			echo json_encode( array( 'error' => 'no post autosave' ) );
