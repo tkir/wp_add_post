@@ -2,6 +2,7 @@ var FPE_Form = /** @class */ (function () {
     function FPE_Form() {
         var _this = this;
         this.tags = [];
+        this.tagTimer = null;
         this.form = document.querySelector('#fpeForm ');
         this.divEditorWrapper = this.form.querySelector('[data-editor-wrapper]');
         this.divTags = this.form.querySelector('div[data-tags]');
@@ -30,11 +31,8 @@ var FPE_Form = /** @class */ (function () {
             if (typeof fpe_post !== 'undefined')
                 _this.setPost();
         });
-        setInterval(function () { return _this.autosave(); }, fpeConfig['asInterval']);
+        // setInterval(() => this.autosave(), fpeConfig['asInterval']);
     }
-    FPE_Form.prototype.getTags = function () {
-        return this.tags;
-    };
     FPE_Form.prototype.checkMediumEditor = function (cb) {
         var _this = this;
         if (typeof MediumEditor === 'undefined') {
@@ -96,25 +94,38 @@ var FPE_Form = /** @class */ (function () {
     };
     FPE_Form.prototype.inputInput = function () {
         var _this = this;
-        var val = this.input.value.trim();
         this.removeTagsBtns();
-        if (val.length > 1) {
+        this.tagInputDelay(function () { return _this.tagAjax(); });
+    };
+    FPE_Form.prototype.tagAjax = function () {
+        var _this = this;
+        if (this.input.value.trim() != '') {
             $.ajax({
                 type: "POST",
                 url: fpeConfig['ajaxPath'],
                 data: {
                     action: 'tag_autofill',
                     nonce: fpeConfig['nonce'],
-                    tag: val
+                    tag: this.input.value.trim()
                 },
                 success: function (data) {
-                    _this.setDivAutocomplete(data.map(function (t) { return t.name; }));
+                    _this.setDivAutocomplete(data);
                 },
                 error: function (error) {
                     console.error(error.statusText);
                 }
             });
         }
+    };
+    /**
+     * Задержка перед начадом поиска тегов 1с
+     */
+    FPE_Form.prototype.tagInputDelay = function (cb) {
+        if (this.tagTimer) {
+            clearTimeout(this.tagTimer);
+            this.tagTimer = null;
+        }
+        this.tagTimer = setTimeout(cb, 1000);
     };
     FPE_Form.prototype.inputKeyDown = function (e) {
         if (e.keyCode == 13 || e.keyCode == 188 || e.keyCode == 191) {
@@ -204,7 +215,6 @@ var FPE_Form = /** @class */ (function () {
     };
     //Редактирование поста
     FPE_Form.prototype.setPost = function () {
-        console.log(fpe_post);
         this.editor.setContent("\n        <" + fpeConfig['fpe_tag_title'] + " data-placeholder=\"" + fpeConfig['fpe_ph_title'] + "\">" + fpe_post['post_title'] + "</" + fpeConfig['fpe_tag_title'] + ">\n        " + fpe_post['post_content'] + "\n        ");
         if (fpe_post['tags_input'] != undefined && fpe_post['tags_input'] != '')
             this.addTag(fpe_post['tags_input'].join(','));

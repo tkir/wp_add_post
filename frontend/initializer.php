@@ -162,16 +162,58 @@ class FPE_Initializer {
 		}
 
 		global $wpdb;
-		$tag = esc_sql( $_POST['tag'] );
+		$tag     = esc_sql( $_POST['tag'] );
+		$tagsArr = array();
 
 		$tags = $wpdb->get_results( "
+SELECT name FROM `wp_terms`
+	WHERE term_id IN ( SELECT term_id FROM wp_term_taxonomy WHERE taxonomy='post_tag' )
+	AND name = '$tag'
+	" );
+		if ( ! empty( $tags ) ) {
+			foreach ( $tags as $value ) {
+				array_push( $tagsArr, $value->name );
+			}
+		}
+
+		$tags = $wpdb->get_results( "
+SELECT name FROM `wp_terms`
+	WHERE term_id IN ( SELECT term_id FROM wp_term_taxonomy WHERE taxonomy='post_tag' )
+	AND name LIKE '$tag%' LIMIT 6
+	" );
+		if ( ! empty( $tags ) ) {
+			foreach ( $tags as $value ) {
+				array_push( $tagsArr, $value->name );
+			}
+
+			$tagsArr = array_unique( $tagsArr );
+			while ( count( $tagsArr ) > 6 ) {
+				array_pop( $tagsArr );
+			}
+		}
+
+		if ( count( $tagsArr ) < 6 ) {
+			$tags = $wpdb->get_results( "
 SELECT name FROM `wp_terms`
 	WHERE term_id IN ( SELECT term_id FROM wp_term_taxonomy WHERE taxonomy='post_tag' )
 	AND name LIKE '%$tag%'
 	" );
 
+			if ( ! empty( $tags ) ) {
+				foreach ( $tags as $value ) {
+					array_push( $tagsArr, $value->name );
+				}
+
+				$tagsArr = array_unique( $tagsArr );
+				while ( count( $tagsArr ) > 6 ) {
+					array_pop( $tagsArr );
+				}
+			}
+		}
+
+
 		header( "Content-Type: application/json" );
-		echo json_encode( $tags );
+		echo json_encode( $tagsArr );
 
 		wp_die();
 	}

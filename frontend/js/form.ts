@@ -23,10 +23,7 @@ class FPE_Form {
 
     private tags = [];
     private formStr: string;
-
-    public getTags() {
-        return this.tags;
-    }
+    private tagTimer: any = null;
 
     constructor() {
         this.form = document.querySelector('#fpeForm ');
@@ -60,7 +57,7 @@ class FPE_Form {
             if (typeof fpe_post !== 'undefined') this.setPost();
         });
 
-        setInterval(() => this.autosave(), fpeConfig['asInterval']);
+        // setInterval(() => this.autosave(), fpeConfig['asInterval']);
     }
 
     checkMediumEditor(cb) {
@@ -129,21 +126,22 @@ class FPE_Form {
     }
 
     inputInput() {
-        let val = this.input.value.trim();
         this.removeTagsBtns();
+        this.tagInputDelay(() => this.tagAjax());
+    }
 
-        if (val.length > 1) {
-
+    private tagAjax() {
+        if (this.input.value.trim() != '') {
             $.ajax({
                 type: "POST",
                 url: fpeConfig['ajaxPath'],
                 data: {
                     action: 'tag_autofill',
                     nonce: fpeConfig['nonce'],
-                    tag: val
+                    tag: this.input.value.trim()
                 },
                 success: (data) => {
-                    this.setDivAutocomplete(data.map(t => t.name));
+                    this.setDivAutocomplete(data);
                 },
                 error: (error) => {
                     console.error(error.statusText);
@@ -151,6 +149,17 @@ class FPE_Form {
 
             });
         }
+    }
+
+    /**
+     * Задержка перед начадом поиска тегов 1с
+     */
+    private tagInputDelay(cb) {
+        if (this.tagTimer) {
+            clearTimeout(this.tagTimer);
+            this.tagTimer = null;
+        }
+        this.tagTimer = setTimeout(cb, 1000);
     }
 
     inputKeyDown(e: KeyboardEvent) {
@@ -251,7 +260,7 @@ class FPE_Form {
     }
 
     //Редактирование поста
-    private setPost() {console.log(fpe_post);
+    private setPost() {
         this.editor.setContent(`
         <${fpeConfig['fpe_tag_title']} data-placeholder="${fpeConfig['fpe_ph_title']}">${fpe_post['post_title']}</${fpeConfig['fpe_tag_title']}>
         ${fpe_post['post_content']}
