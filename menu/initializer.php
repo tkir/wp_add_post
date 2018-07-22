@@ -71,7 +71,7 @@ class FPE_Menu_Initializer {
 		if ( get_option( $req['name'] ) != $req['data'] ) {
 
 			if ( $req['name'] == 'frontendPostEditor_slug' ) {
-				$this->slugChanged($req['data']);
+				$this->slugChanged( $req['data'] );
 			}
 
 			if ( $req['name'] == 'frontendPostEditor_trust_policy' ) {
@@ -105,7 +105,7 @@ class FPE_Menu_Initializer {
 		wp_die();
 	}
 
-	private function slugChanged($newSlug){
+	private function slugChanged( $newSlug ) {
 		$newSlug = str_replace( array(
 			'~',
 			'`',
@@ -146,27 +146,26 @@ class FPE_Menu_Initializer {
 		) );
 	}
 
-//	TODO продумать изменения политики безопасности
 	private function trustPolicyChanged( $newPolicy ) {
 		$oldPolicy = get_option( 'frontendPostEditor_trust_policy' );
-
-		if($oldPolicy=='trust_all' && $newPolicy=='after_first'){
-
+		if ( $newPolicy == $oldPolicy ) {
+			return;
 		}
-		else if($oldPolicy=='trust_all' && $newPolicy=='trust_never'){
 
-		}
-		else if($oldPolicy=='after_first' && $newPolicy=='trust_all'){
+		$users = get_users( array( 'ID' ) );
+		$users = array_map( function ( $user ) {
+			return $user->ID;
+		}, $users );
 
-		}
-		else if($oldPolicy=='after_first' && $newPolicy=='trust_never'){
-
-		}
-		else if($oldPolicy=='trust_never' && $newPolicy=='trust_all'){
-
-		}
-		else if($oldPolicy=='trust_never' && $newPolicy=='after_first'){
-
+		if ( $newPolicy == 'trust_never' ||
+		     ( $oldPolicy == 'trust_all' && $newPolicy == 'after_first' ) ) {
+			foreach ( $users as $id ) {
+				update_user_meta( $id, 'fpeUserTrust', 0 );
+			}
+		} else if ( $newPolicy == 'trust_all' ) {
+			foreach ( $users as $id ) {
+				update_user_meta( $id, 'fpeUserTrust', 1 );
+			}
 		}
 	}
 
@@ -195,7 +194,9 @@ class FPE_Menu_Initializer {
 			return $old_status;
 		}
 
-		update_user_meta( $post->post_author, 'fpeUserTrust', true );
+		if ( get_option( 'frontendPostEditor_trust_policy' ) == 'after_first' ) {
+			update_user_meta( $post->post_author, 'fpeUserTrust', true );
+		}
 
 		return $new_status;
 	}
