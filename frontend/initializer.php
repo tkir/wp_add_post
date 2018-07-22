@@ -81,6 +81,7 @@ class FPE_Initializer {
 		update_option( 'frontendPostEditor_trust_policy', 'after_first' );
 
 //		Medium editor MultiPlaceholders
+		update_option( 'frontendPostEditor_me_theme', 'default.css' );
 		update_option( 'frontendPostEditor_tag_title', 'h1' );
 		update_option( 'frontendPostEditor_placeholder_title', 'Title' );
 		update_option( 'frontendPostEditor_tag_body', 'p' );
@@ -128,13 +129,22 @@ class FPE_Initializer {
 		wp_enqueue_script( 'jquery-iframe-transport', 'https://cdnjs.cloudflare.com/ajax/libs/jquery.iframe-transport/1.0.1/jquery.iframe-transport.min.js', false, false, true );
 		wp_enqueue_script( 'jquery-fileupload', 'https://cdnjs.cloudflare.com/ajax/libs/blueimp-file-upload/9.22.0/js/jquery.fileupload.min.js', false, false, true );
 
-		wp_enqueue_style( 'medium_editor_css', 'https://cdn.jsdelivr.net/npm/medium-editor@5.23.2/dist/css/medium-editor.min.css' );
-		wp_enqueue_script( 'medium_editor_js', 'https://cdn.jsdelivr.net/npm/medium-editor@5.23.2/dist/js/medium-editor.min.js', array(), null, true );
+		wp_enqueue_style( 'medium_editor_css', plugin_dir_url( __DIR__ ) . 'medium_editor/MediumEditor/css/medium-editor.min.css' );
+		wp_enqueue_style( 'medium_editor_theme', plugin_dir_url( __DIR__ ) . 'medium_editor/MediumEditor/css/themes/' . get_option( 'frontendPostEditor_me_theme' ) );
+		wp_enqueue_script( 'medium_editor_js', plugin_dir_url( __DIR__ ) . 'medium_editor/MediumEditor/js/medium-editor.min.js',
+			array(
+				'jquery',
+				'handlebars',
+				'jQuery-sortable',
+				'jquery-ui-widget',
+				'jquery-iframe-transport',
+				'jquery-fileupload'
+			), null, true );
 
-		wp_enqueue_style( 'medium-editor-insert-plugin-css', 'https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/css/medium-editor-insert-plugin.min.css' );
-		wp_enqueue_script( 'medium-editor-insert-plugin-js', 'https://cdnjs.cloudflare.com/ajax/libs/medium-editor-insert-plugin/2.5.0/js/medium-editor-insert-plugin.min.js', false, false, true );
+		wp_enqueue_style( 'medium-editor-insert-plugin-css', plugin_dir_url( __DIR__ ) . 'medium_editor/InsertPlugin/css/medium-editor-insert-plugin.min.css' );
+		wp_enqueue_script( 'medium-editor-insert-plugin-js', plugin_dir_url( __DIR__ ) . 'medium_editor/InsertPlugin/js/medium-editor-insert-plugin.min.js', array( 'medium_editor_js' ), false, true );
 
-		wp_enqueue_script( 'Multiplaceholders', plugin_dir_url( __DIR__ ) . 'medium_editor/MultiPlaceholders/medium-editor-multi-placeholders-plugin.min.js', false, false, true );
+		wp_enqueue_script( 'medium-editor-multiplaceholders', plugin_dir_url( __DIR__ ) . 'medium_editor/MultiPlaceholders/medium-editor-multi-placeholders-plugin.min.js', array( 'medium_editor_js' ), false, true );
 
 		wp_localize_script( 'script_form', 'fpeConfig', $this->jsConfig() );
 	}
@@ -293,6 +303,7 @@ SELECT name FROM `wp_terms`
 		delete_option( 'frontendPostEditor_trust_policy' );
 
 //		Medium editor MultiPlaceholders
+		delete_option( 'frontendPostEditor_me_theme' );
 		delete_option( 'frontendPostEditor_tag_title' );
 		delete_option( 'frontendPostEditor_placeholder_title' );
 		delete_option( 'frontendPostEditor_tag_body' );

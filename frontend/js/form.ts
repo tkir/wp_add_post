@@ -62,7 +62,7 @@ class FPE_Form {
 
     checkMediumEditor(cb) {
         if (typeof MediumEditor === 'undefined') {
-            setTimeout(() => this.checkMediumEditor(cb), 300);
+            setTimeout(() => this.checkMediumEditor(cb), 500);
             return;
         }
         cb(null, true);

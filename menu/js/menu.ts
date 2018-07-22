@@ -3,15 +3,15 @@ declare const jQuery: any;
 
 class MenuGeneral {
     private divArr: [{ name: string, input: HTMLInputElement, button: HTMLButtonElement }];
-    private selectAccess: HTMLSelectElement;
+    private selects: any;
     private radioTrust: any;
 
     constructor() {
-        this.selectAccess = document.querySelector('#fpe-menuGeneral div[data-update=frontendPostEditor_user_access] select');
-        this.selectAccess.addEventListener('change', (e) => this.selectAccessChange(e));
+        this.selects = document.querySelectorAll('#fpe-menuGeneral select');
+        [].forEach.call(this.selects, (select) => select.addEventListener('change', (e) => this.selectChange(e)));
 
         this.radioTrust = document.querySelectorAll('#fpe-menuGeneral div[data-update=frontendPostEditor_trust_policy] input');
-        [].forEach.call(this.radioTrust, (redio) => redio.addEventListener('click', (e) => this.radioTrustClick(e)));
+        [].forEach.call(this.radioTrust, (radio) => radio.addEventListener('click', (e) => this.radioTrustClick(e)));
 
         let arr = document.querySelectorAll('#fpe-menuGeneral div[data-update]');
         this.divArr = [].map.call(arr, (div) => {
@@ -27,15 +27,15 @@ class MenuGeneral {
 
     }
 
-    public selectAccessChange(e) {
+    public selectChange(e) {
         this.ajaxUpdate({
-            name: this.selectAccess.getAttribute('data-update'),
-            data: this.selectAccess.value
-        });
+            name: e.target.getAttribute('data-update'),
+            data: e.target.value
+        })
     }
 
     public radioTrustClick(e) {
-        this.ajaxUpdate({name:'frontendPostEditor_trust_policy', data:e.target.value});
+        this.ajaxUpdate({name: 'frontendPostEditor_trust_policy', data: e.target.value});
     }
 
     public btnUpdateClick(e) {
@@ -55,10 +55,6 @@ class MenuGeneral {
                 body: obj
             },
             success: (res) => {
-                this.divArr.forEach(div => {
-                    if (div.name == res.name)
-                        div.input.value = res.data;
-                })
             },
             error: (error) => {
                 console.error(error.statusText);

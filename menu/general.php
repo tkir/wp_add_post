@@ -25,6 +25,34 @@
 
     <hr>
     <h2>Medium editor</h2>
+    <div>
+        <label>Theme
+            <select data-update="frontendPostEditor_me_theme">
+                <option value="beagle.css" <?= get_option( 'frontendPostEditor_me_theme' ) == 'beagle.css' ? 'selected' : ''; ?>>
+                    Beagle
+                </option>
+                <option value="bootstrap.css" <?= get_option( 'frontendPostEditor_me_theme' ) == 'bootstrap.css' ? 'selected' : ''; ?>>
+                    Bootstrap
+                </option>
+                <option value="default.css" <?= get_option( 'frontendPostEditor_me_theme' ) == 'default.css' ? 'selected' : ''; ?>>
+                    Default
+                </option>
+                <option value="flat.css" <?= get_option( 'frontendPostEditor_me_theme' ) == 'flat.css' ? 'selected' : ''; ?>>
+                    Flat
+                </option>
+                <option value="mani.css" <?= get_option( 'frontendPostEditor_me_theme' ) == 'mani.css' ? 'selected' : ''; ?>>
+                    Mani
+                </option>
+                <option value="roman.css" <?= get_option( 'frontendPostEditor_me_theme' ) == 'roman.css' ? 'selected' : ''; ?>>
+                    Roman
+                </option>
+                <option value="tim.css" <?= get_option( 'frontendPostEditor_me_theme' ) == 'tim.css' ? 'selected' : ''; ?>>
+                    Tim
+                </option>
+            </select>
+        </label>
+    </div>
+
     <div data-update="frontendPostEditor_tag_title">
         <label> Placeholder title tag
             <input type="text" value="<?= get_option( 'frontendPostEditor_tag_title' ); ?>">
@@ -53,9 +81,9 @@
 
     <hr>
     <h2>Policy</h2>
-    <div data-update="frontendPostEditor_user_access">
+    <div>
         <label>User access
-            <select>
+            <select data-update="frontendPostEditor_user_access">
                 <option value="manage_sites" <?= get_option( 'frontendPostEditor_user_access' ) == 'manage_sites' ? 'selected' : ''; ?>>
                     Super admin
                 </option>

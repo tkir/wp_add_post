@@ -1,10 +1,10 @@
 var MenuGeneral = /** @class */ (function () {
     function MenuGeneral() {
         var _this = this;
-        this.selectAccess = document.querySelector('#fpe-menuGeneral div[data-update=frontendPostEditor_user_access] select');
-        this.selectAccess.addEventListener('change', function (e) { return _this.selectAccessChange(e); });
+        this.selects = document.querySelectorAll('#fpe-menuGeneral select');
+        [].forEach.call(this.selects, function (select) { return select.addEventListener('change', function (e) { return _this.selectChange(e); }); });
         this.radioTrust = document.querySelectorAll('#fpe-menuGeneral div[data-update=frontendPostEditor_trust_policy] input');
-        [].forEach.call(this.radioTrust, function (redio) { return redio.addEventListener('click', function (e) { return _this.radioTrustClick(e); }); });
+        [].forEach.call(this.radioTrust, function (radio) { return radio.addEventListener('click', function (e) { return _this.radioTrustClick(e); }); });
         var arr = document.querySelectorAll('#fpe-menuGeneral div[data-update]');
         this.divArr = [].map.call(arr, function (div) {
             var btn = div.querySelector('button');
@@ -18,10 +18,10 @@ var MenuGeneral = /** @class */ (function () {
             };
         });
     }
-    MenuGeneral.prototype.selectAccessChange = function (e) {
+    MenuGeneral.prototype.selectChange = function (e) {
         this.ajaxUpdate({
-            name: this.selectAccess.getAttribute('data-update'),
-            data: this.selectAccess.value
+            name: e.target.getAttribute('data-update'),
+            data: e.target.value
         });
     };
     MenuGeneral.prototype.radioTrustClick = function (e) {
@@ -35,7 +35,6 @@ var MenuGeneral = /** @class */ (function () {
         });
     };
     MenuGeneral.prototype.ajaxUpdate = function (obj) {
-        var _this = this;
         jQuery.ajax({
             type: "POST",
             url: fpeMenuConfig['ajaxPath'],
@@ -45,10 +44,6 @@ var MenuGeneral = /** @class */ (function () {
                 body: obj
             },
             success: function (res) {
-                _this.divArr.forEach(function (div) {
-                    if (div.name == res.name)
-                        div.input.value = res.data;
-                });
             },
             error: function (error) {
                 console.error(error.statusText);

@@ -36,7 +36,7 @@ var FPE_Form = /** @class */ (function () {
     FPE_Form.prototype.checkMediumEditor = function (cb) {
         var _this = this;
         if (typeof MediumEditor === 'undefined') {
-            setTimeout(function () { return _this.checkMediumEditor(cb); }, 300);
+            setTimeout(function () { return _this.checkMediumEditor(cb); }, 500);
             return;
         }
         cb(null, true);
