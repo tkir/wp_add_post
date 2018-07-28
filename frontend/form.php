@@ -53,9 +53,10 @@ if ( $id ) {
     <input type="hidden" name="post-status">
     <input type="hidden" name="post-parent">
 
-    <label class="" for="post-category">Категория
+    <span class="">Категория
 		<?php wp_dropdown_categories(
 			array(
+				'show_option_all'    => 'Выберите категорию вашей публикации',
 				'class'        => '',                 //сюда выставить классы для select
 				'name'         => 'post-category',
 				'hierarchical' => 1,                  //выводить сплошным списком или иерархией
@@ -63,7 +64,7 @@ if ( $id ) {
 				'selected'     => isset( $postData ) ? $postData['post_category'][0] : 0
 			)
 		); ?>
-    </label>
+    </span>
 
     <div data-editor-wrapper>
         <template>

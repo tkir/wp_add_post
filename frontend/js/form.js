@@ -31,7 +31,7 @@ var FPE_Form = /** @class */ (function () {
             if (typeof fpe_post !== 'undefined')
                 _this.setPost();
         });
-        // setInterval(() => this.autosave(), fpeConfig['asInterval']);
+        setInterval(function () { return _this.autosave(); }, fpeConfig['asInterval']);
     }
     FPE_Form.prototype.checkMediumEditor = function (cb) {
         var _this = this;
@@ -42,6 +42,7 @@ var FPE_Form = /** @class */ (function () {
         cb(null, true);
     };
     FPE_Form.prototype.mediumEditorInit = function () {
+        var _this = this;
         var oldEditor = this.form.querySelector('[data-editor-wrapper] > div');
         if (oldEditor)
             this.divEditorWrapper.removeChild(oldEditor);
@@ -65,9 +66,7 @@ var FPE_Form = /** @class */ (function () {
             }
         });
         $(function () {
-            $('#fpeForm [data-editor]').mediumInsert({
-                editor: this.editor
-            });
+            return $('#fpeForm [data-editor]').mediumInsert({ editor: _this.editor });
         });
     };
     FPE_Form.prototype.addTagClick = function () {

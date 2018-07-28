@@ -57,7 +57,7 @@ class FPE_Form {
             if (typeof fpe_post !== 'undefined') this.setPost();
         });
 
-        // setInterval(() => this.autosave(), fpeConfig['asInterval']);
+        setInterval(() => this.autosave(), fpeConfig['asInterval']);
     }
 
     checkMediumEditor(cb) {
@@ -92,11 +92,9 @@ class FPE_Form {
                 })
             }
         });
-        $(function () {
-            $('#fpeForm [data-editor]').mediumInsert({
-                editor: this.editor
-            });
-        });
+        $(() =>
+            $('#fpeForm [data-editor]').mediumInsert({editor: this.editor})
+        );
     }
 
     addTagClick() {

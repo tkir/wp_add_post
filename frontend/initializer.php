@@ -237,7 +237,6 @@ SELECT name FROM `wp_terms`
 		header( "Content-Type: application/json" );
 
 		$id = esc_sql( $_POST['id'] );
-		file_put_contents( __DIR__ . '/test.txt', $id );
 		if ( ! $id ) {
 			echo json_encode( array( 'result' => 'no post' ) );
 			wp_die();
