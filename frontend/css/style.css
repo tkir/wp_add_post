@@ -2,3 +2,135 @@
     display: inline-block;
     max-width: 80%;
 }
+/* New Story */
+
+/* Story Panel */
+
+.story-panel {
+    padding: 10px 40px;
+    border-bottom: 1px solid #f0f0f0
+}
+.story-panel .buttons-groupe {
+    float:right;
+}
+
+.story-panel button {
+    display: inline-block;
+    border: 0;
+    padding: 0 20px;
+    line-height: 34px;
+    font-size: 14px;
+    font-weight: 400;
+    border-radius: 4px;
+    outline: 0;
+    cursor: pointer;
+    margin: 0 0 0 8px;
+}
+.story-panel .publish {
+    background:#008cc8;
+    color:#fff;
+}
+.story-panel .draft,
+.story-panel .cancel,
+.story-panel .clear{
+    background:none;
+    color:#818181;
+    border:1px solid #ddd;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    transition: all .2s ease-in-out;
+}
+.story-panel .cancel {
+    margin:0;
+}
+.story-panel .draft:hover,
+.story-panel .cancel:hover,
+.story-panel .clear:hover{
+    box-shadow: 0 1px 2px rgba(0,0,0,.08);
+    border-color: #999;
+    color: #111;
+}
+.story-panel .publish:hover {
+    background:#0d84b7;
+}
+
+/* MediumEditor Placeholders */
+
+.medium-editor-placeholder-relative:after, .medium-editor-placeholder:after {
+    font-style:normal;
+    color:#e1e1e1;
+}
+/* MediumEditor */
+.medium-editor-element{
+    min-height:60vh;
+}
+.medium-editor-insert-plugin .medium-insert-buttons button {
+    color: #fff;
+    background: #cdcccc;
+    border: 1px solid #cdcccc;
+}
+.medium-editor-insert-plugin .medium-insert-buttons button:hover {
+    background: #a7a5a5;
+    border: 1px solid #a7a5a5;
+}
+.medium-editor-insert-plugin .medium-insert-buttons .medium-insert-buttons-show span {
+    margin:0;
+}
+.medium-editor-insert-plugin .medium-insert-buttons{
+    margin-left: -45px;
+}
+/* MediumEditor */
+
+/* MediumEditor Tags*/
+ul.postTags-list {
+    margin:0;
+}
+.postTags-list > li {
+    display: inline-block;
+    padding: 8px 10px;
+    margin: 0 8px 6px 0;
+    font-size: 14px;
+    text-decoration: none;
+    border: 1px solid #f0f0f0;
+    border-radius: 2px;
+    background: #fafafa;
+    color: rgba(0,0,0,0.6);
+    -webkit-transition: all 0.1s;
+    transition: all 0.1s;
+    white-space: nowrap;
+}
+.postTags-list > li:hover {
+    border: 1px solid #999;
+}
+.postTags-list > li:hover i {
+    color: rgba(0,0,0,0.6);
+}
+.postTags-list i {
+    font-size: 12px;
+    padding-left: 5px;
+    vertical-align: middle;
+    color: #999;
+}
+/* MediumEditor Tags*/
+.bodyCopy input::-webkit-input-placeholder {
+    color: #ccc;
+}
+.bodyCopy input, .bodyCopy select {
+    border:none;
+    padding:0;
+    color: #ccc;
+    font-weight:400;
+    font-size:16px;
+}
+.bodyCopy input:hover, .bodyCopy select:hover {
+    transform: none;
+    box-shadow: none;
+}
+/* MediumEditor Tags Popover*/
+.tags-autocomplete-popover {
+    position: absolute;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25), 0 0 1px rgba(0,0,0,0.35);
+    padding: 20px;
+    font-size: 14px;
+    border-radius:4px;
+}
