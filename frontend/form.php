@@ -108,6 +108,7 @@ if ( $id ) {
                             <div data-thumbnail>
                                 <input type="file" name="post-thumbnail" multiple="false">
                                 <img>
+                                <!dfgddg!>
                             </div>
                         </div>
                     </div>
