@@ -33,6 +33,7 @@ if (
 	);
 
 	$post_content = fpe_saveImagesFromPot( $post_content );
+	str_replace('<img', '<img class="js-imageZoom size-full"', $post_content);
 
 	$post_id = ( is_null( get_post( $post_id ) ) ) ?
 		wp_insert_post( $postData ) : wp_update_post( $postData );
